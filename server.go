@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/babbage88/smbplusplus/internal/pretty"
 	"github.com/joho/godotenv"
+	"github.com/minio/minio-go/v7"
 )
 
 type SmbPlusSquaredServerOption func(p *SmbPlusSquaredServer)
@@ -25,9 +25,9 @@ func WithEnvFile(s string) SmbPlusSquaredServerOption {
 	}
 }
 
-func WithFilesDir(s string) SmbPlusSquaredServerOption {
+func WithSquaredShares(s []SquaredShare) SmbPlusSquaredServerOption {
 	return func(g *SmbPlusSquaredServer) {
-		g.FilesDir = s
+		g.SquaredShares = s
 	}
 }
 
@@ -37,35 +37,24 @@ func WithListenAddr(s string) SmbPlusSquaredServerOption {
 	}
 }
 
-func WithStaticFiles(e *embed.FS) SmbPlusSquaredServerOption {
-	return func(g *SmbPlusSquaredServer) {
-		g.StaticFiles = *e
-	}
-}
-
-func WithTemplateFiles(e *embed.FS) SmbPlusSquaredServerOption {
-	return func(g *SmbPlusSquaredServer) {
-		g.TemplateFiles = *e
-	}
+type SquaredShare struct {
+	LocalPath string           `json:"localPath"`
+	S3Bucket  minio.BucketInfo `json:"s3Bucket"`
 }
 
 type SmbPlusSquaredServer struct {
-	FilesDir      string   `json:"filesDir"`
-	EnvFile       string   `json:"envFile"`
-	ListenAddr    string   `json:"listenAddr"`
-	StaticFiles   embed.FS `json:"staticFs"`
-	TemplateFiles embed.FS `json:"templateFs"`
+	SquaredShares []SquaredShare `json:"localShares"`
+	EnvFile       string         `json:"envFile"`
+	ListenAddr    string         `json:"listenAddr"`
 }
 
 func New(opts ...SmbPlusSquaredServerOption) *SmbPlusSquaredServer {
 	const (
 		envFile  = ".env"
-		filesDir = "/mnt/files/htfiles"
-		listAddr = ":4100"
+		listAddr = ":4200"
 	)
 	srv := &SmbPlusSquaredServer{
 		EnvFile:    envFile,
-		FilesDir:   filesDir,
 		ListenAddr: listAddr,
 	}
 
