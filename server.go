@@ -64,11 +64,9 @@ func New(opts ...SmbPlusSquaredServerOption) *SmbPlusSquaredServer {
 		listAddr = ":4100"
 	)
 	srv := &SmbPlusSquaredServer{
-		EnvFile:       envFile,
-		FilesDir:      filesDir,
-		ListenAddr:    listAddr,
-		StaticFiles:   staticfs,
-		TemplateFiles: viewtmpl,
+		EnvFile:    envFile,
+		FilesDir:   filesDir,
+		ListenAddr: listAddr,
 	}
 
 	for _, opt := range opts {
@@ -80,9 +78,7 @@ func New(opts ...SmbPlusSquaredServerOption) *SmbPlusSquaredServer {
 
 func NewFromEnv(e string) *SmbPlusSquaredServer {
 	g := &SmbPlusSquaredServer{
-		EnvFile:       e,
-		TemplateFiles: viewtmpl,
-		StaticFiles:   staticfs,
+		EnvFile: e,
 	}
 
 	err := godotenv.Load(e)
@@ -106,9 +102,7 @@ func NewFromEnv(e string) *SmbPlusSquaredServer {
 func (g *SmbPlusSquaredServer) Start() {
 	fs := http.FileServer(http.Dir(g.FilesDir))
 	// Serve static files
-	http.Handle("/static/", http.FileServer(http.FS(staticfs)))
 	http.Handle("/files/", http.StripPrefix("/files/", fs))
-	http.Handle("/test/", http.FileServer(http.FS(testfile)))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		g.ServeTemplatesAndScanFiles(w, r)
 	})
