@@ -17,6 +17,7 @@ go-acme-cli
 *.dll
 *.so
 *.dylib
+scratch.sql
 
 # Test binary, built with `go test -c`
 *.test
