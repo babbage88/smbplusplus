@@ -62,7 +62,6 @@ CREATE TABLE IF NOT EXISTS public.users (
 	last_modified timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	enabled bool DEFAULT true NOT NULL,
 	is_deleted bool DEFAULT false NOT NULL,
-	CONSTRAINT check_usesr_id_nonzero CHECK ((id > 0)),
 	CONSTRAINT unique_email UNIQUE (email),
 	CONSTRAINT unique_username UNIQUE (username)
 );
