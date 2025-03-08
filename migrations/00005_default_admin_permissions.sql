@@ -26,16 +26,13 @@ BEGIN
     -- Find the Admin roll uuid for the default Admin user
     SELECT id INTO dev_adminroleid FROM public.user_roles WHERE role_name = 'Admin';
     -- Find the user ID for the username of the default admin user.
--- +goose envsub on
-    --SELECT id INTO devuser_id FROM public.users WHERE username = '${DEV_APP_USER}';
--- +goose envsub off
 
     INSERT INTO public.role_permission_mapping (role_id, permission_id)
-    dev_adminroleid, id FROM public.app_permissions
+    SELECT dev_adminroleid, id FROM public.app_permissions
     WHERE permission_name IN ('DeleteUser', 'DeleteRole', 'DeletePermission');
 
     INSERT INTO public.role_permission_mapping (role_id, permission_id)
-    dev_adminroleid, id FROM public.app_permissions
+    SELECT dev_adminroleid, id FROM public.app_permissions
     WHERE permission_name IN ('CreateRole', 'AlterRole', 'CreatePermission', 'AlterPermission');
 END $$;
 -- +goose StatementEnd
