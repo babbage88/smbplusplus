@@ -24,7 +24,7 @@ permissions AS (
     VALUES
         ('CreateUser', 'Permission to create users'),
         ('AlterUser', 'Permission to alter users'),
-        ('CreateDatabase', 'Permission to create databases')
+        ('CreateShare', 'Permission to create databases')
     ON CONFLICT (permission_name) DO NOTHING
     RETURNING id, permission_name
 )
@@ -32,11 +32,13 @@ INSERT INTO public.role_permission_mapping (role_id, permission_id)
 SELECT COALESCE((SELECT id FROM admin_role), (SELECT id FROM public.user_roles WHERE role_name = 'Admin')),
        p.id
 FROM public.app_permissions p
-WHERE p.permission_name IN ('CreateUser', 'AlterUser', 'CreateDatabase');
+WHERE p.permission_name IN ('CreateUser', 'AlterUser', 'CreateShare');
 -- +goose StatementEnd
 
 
 -- +goose Down
 -- +goose StatementBegin
 DELETE FROM public.users WHERE "username" = 'devuser';
+DELETE FROM public.user_roles WHERE role_name = 'Admin';
+--DELETE FROM public.app_permissions WHERE permission_name IN ('CreateUser', 'AlterUser', 'CreateShare');
 -- +goose StatementEnd

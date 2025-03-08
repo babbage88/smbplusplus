@@ -127,11 +127,13 @@ $$ LANGUAGE plpgsql;
 -- Table Triggers
 
 -- +goose StatementBegin
+DROP TRIGGER IF EXISTS user_delete_trigger ON users;
 CREATE TRIGGER user_delete_trigger
-AFTER DELETE ON users
+BEFORE DELETE ON users
 FOR EACH ROW
 EXECUTE FUNCTION log_user_deletion();
 -- +goose StatementEnd
+
 
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS public.auth_tokens (
