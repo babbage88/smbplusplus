@@ -3,8 +3,8 @@
 -- +goose envsub on
 -- Creating go-infra app/api user for development/testing
  INSERT INTO public.users
- (id, username, "password", email, "role", created_at, last_modified)
- VALUES(gen_random_uuid(), 'devuser', '${DEV_APP_USER_PW}', 'devuser@test.trahan.dev', 'admin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+ (id, username, "password", email, created_at, last_modified)
+ VALUES(gen_random_uuid(), 'devuser', '${DEV_APP_USER_PW}', 'devuser@test.trahan.dev', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 -- +goose envsub off
 -- +goose StatementEnd
 
