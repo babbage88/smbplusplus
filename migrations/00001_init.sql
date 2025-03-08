@@ -47,8 +47,7 @@ CREATE TABLE IF NOT EXISTS public.user_roles (
 	last_modified timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	enabled bool DEFAULT true NOT NULL,
 	is_deleted bool DEFAULT false NOT NULL,
-	CONSTRAINT unique_role_name UNIQUE (role_name),
-	CONSTRAINT user_roles_pkey PRIMARY KEY (id)
+	CONSTRAINT unique_role_name UNIQUE (role_name)
 );
 CREATE INDEX user_roles_idx_created_at ON public.user_roles USING btree (created_at);
 -- +goose StatementEnd
