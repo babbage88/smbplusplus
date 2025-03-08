@@ -2,8 +2,8 @@
 -- +goose StatementBegin
 DO $$
 DECLARE
-    devuser_id TEXT;
-    dev_adminroleid TEXT;
+    devuser_id uuid;
+    dev_adminroleid uuid;
 BEGIN
     -- Find the Admin roll uuid for the default Admin user
     SELECT id INTO dev_adminroleid FROM public.user_roles WHERE role_name = 'Admin';
@@ -28,7 +28,7 @@ END $$;
 -- +goose Down
 -- +goose StatementBegin
 DO $$
-DECLARE dev_adminroleid TEXT;
+DECLARE dev_adminroleid uuid;
 BEGIN
     SELECT id INTO dev_adminroleid FROM public.user_roles WHERE role_name = 'Admin';
     -- Remove the user_role_mapping for the user "devuser" and Admin role (role_id = 999)
