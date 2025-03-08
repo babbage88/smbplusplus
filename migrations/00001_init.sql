@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS public.app_permissions (
 
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS public.health_check (
-	id uuid PRIMARY KEY NOT NULL gen_random_uuid(), 
+	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	status varchar(255) NULL,
 	check_type varchar(255) NULL,
 	created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -108,9 +108,9 @@ CREATE TABLE IF NOT EXISTS public.users (
 );
 CREATE INDEX users_idx_created ON public.users USING btree (created_at);
 CREATE INDEX users_idx_user_id ON public.users USING btree (id, username);
-
+-- +goose StatementEnd
 -- Table Triggers
-
+-- +goose StatementBegin
 create trigger user_delete_trigger after
 delete
     on
