@@ -103,8 +103,7 @@ CREATE TABLE IF NOT EXISTS public.user_role_mapping (
 	enabled bool DEFAULT true NOT NULL,
 	created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	last_modified timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT unique_user_role_id UNIQUE (user_id, role_id),
-	CONSTRAINT user_role_mapping_pkey PRIMARY KEY (id)
+	CONSTRAINT unique_user_role_id UNIQUE (user_id, role_id)
 );
 
 -- public.user_role_mapping foreign keys
