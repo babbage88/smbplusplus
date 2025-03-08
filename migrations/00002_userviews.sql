@@ -57,7 +57,7 @@ AS SELECT u.id,
     u.password,
     u.email,
     COALESCE(array_agg(ur.role_name) FILTER (WHERE ur.role_name IS NOT NULL), ARRAY['None'::text]::character varying[]) AS roles,
-    COALESCE(array_agg(urm.role_id) FILTER (WHERE urm.role_id IS NOT NULL), ARRAY[0]) AS role_ids,
+    COALESCE(array_agg(urm.role_id) FILTER (WHERE urm.role_id IS NOT NULL), '{}'::uuid[]) AS role_ids
     u.created_at,
     u.last_modified,
     u.enabled,
