@@ -103,17 +103,21 @@ ALTER TABLE public.user_role_mapping ADD CONSTRAINT fk_user FOREIGN KEY (user_id
 
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS public.users_audit (
-	audit_id serial4 NOT NULL,
-	user_id uuid REFERENCES users (id) NULL,
-	username varchar(255) NULL,
-	email varchar(255) NULL,
-	deleted_at timestamptz DEFAULT now() NULL,
-	deleted_by varchar(255) NULL,
-	CONSTRAINT users_audit_pkey PRIMARY KEY (audit_id)
+    audit_id serial4 PRIMARY KEY,
+    user_id uuid NULL,  -- No foreign key constraint
+    username varchar(255) NULL,
+    email varchar(255) NULL,
+    deleted_at timestamptz DEFAULT now() NULL,
+    deleted_by varchar(255) NULL
 );
 -- +goose StatementEnd
 
 -- +goose StatementBegin
+CREATE INDEX idx_users_audit_user_id ON public.users_audit(user_id);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+-- Create or replace the function to log user deletions
 CREATE OR REPLACE FUNCTION log_user_deletion()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -129,7 +133,8 @@ $$ LANGUAGE plpgsql;
 -- +goose StatementBegin
 DROP TRIGGER IF EXISTS user_delete_trigger ON users;
 CREATE TRIGGER user_delete_trigger
-BEFORE DELETE ON users
+--BEFORE DELETE ON users
+AFTER DELETE ON users
 FOR EACH ROW
 EXECUTE FUNCTION log_user_deletion();
 -- +goose StatementEnd
@@ -156,13 +161,14 @@ DROP FUNCTION log_user_deletion;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
+DROP TABLE public.squared_shares;
 DROP TABLE public.s3_buckets; 
 DROP TABLE public.users_audit;
-DROP TABLE public.users;
-DROP TABLE public.app_permissions;
 DROP TABLE public.auth_tokens;
 DROP TABLE public.health_check;
 DROP TABLE public.role_permission_mapping;
-DROP TABLE public.user_roles;
 DROP TABLE public.user_role_mapping;
+DROP TABLE public.user_roles;
+DROP TABLE public.app_permissions;
+DROP TABLE public.users;
 -- +goose StatementEnd
