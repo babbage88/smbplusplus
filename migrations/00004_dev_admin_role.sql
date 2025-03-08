@@ -9,9 +9,9 @@ BEGIN
     SELECT id INTO dev_adminroleid FROM public.user_roles WHERE role_name = 'Admin';
 
     -- Find the user ID for the username of the default admin user.
-    -- +goose envsub on
-    SELECT id INTO devuser_id FROM public.users WHERE username = '${DEV_APP_USER}';
-    -- +goose envsub off
+-- +goose envsub on
+SELECT id INTO devuser_id FROM public.users WHERE username = '${DEV_APP_USER}';
+-- +goose envsub off
 
     -- Ensure the user exists first before creating the role mapping for default admin user.
     IF devuser_id IS NOT NULL THEN
@@ -33,9 +33,9 @@ BEGIN
     SELECT id INTO dev_adminroleid FROM public.user_roles WHERE role_name = 'Admin';
     -- Remove the user_role_mapping for the user "devuser" and Admin role (role_id = 999)
     DELETE FROM public.user_role_mapping
-    -- +goose envsub on
+-- +goose envsub on
     WHERE user_id = (SELECT id FROM public.users WHERE username = '${DEV_APP_USER}')
-    -- +goose envsub off
+-- +goose envsub off
       AND role_id = dev_adminroleid;
 END $$;
 -- +goose StatementEnd
