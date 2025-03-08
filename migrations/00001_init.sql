@@ -39,23 +39,6 @@ CREATE TABLE IF NOT EXISTS public.health_check (
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS public.user_role_mapping (
-	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-	user_id uuid NOT NULL,
-	role_id uuid NOT NULL,
-	enabled bool DEFAULT true NOT NULL,
-	created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	last_modified timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT unique_user_role_id UNIQUE (user_id, role_id),
-	CONSTRAINT user_role_mapping_pkey PRIMARY KEY (id)
-);
-
--- public.user_role_mapping foreign keys
-ALTER TABLE public.user_role_mapping ADD CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES public.user_roles(id) ON DELETE CASCADE;
-ALTER TABLE public.user_role_mapping ADD CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
--- +goose StatementEnd
-
--- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS public.user_roles (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	role_name varchar(255) NOT NULL,
@@ -110,6 +93,23 @@ CREATE TABLE IF NOT EXISTS public.role_permission_mapping (
 -- public.role_permission_mapping foreign keys
 ALTER TABLE public.role_permission_mapping ADD CONSTRAINT fk_permission FOREIGN KEY (permission_id) REFERENCES public.app_permissions(id) ON DELETE CASCADE;
 ALTER TABLE public.role_permission_mapping ADD CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES public.user_roles(id) ON DELETE CASCADE;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS public.user_role_mapping (
+	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+	user_id uuid NOT NULL,
+	role_id uuid NOT NULL,
+	enabled bool DEFAULT true NOT NULL,
+	created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	last_modified timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT unique_user_role_id UNIQUE (user_id, role_id),
+	CONSTRAINT user_role_mapping_pkey PRIMARY KEY (id)
+);
+
+-- public.user_role_mapping foreign keys
+ALTER TABLE public.user_role_mapping ADD CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES public.user_roles(id) ON DELETE CASCADE;
+ALTER TABLE public.user_role_mapping ADD CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
