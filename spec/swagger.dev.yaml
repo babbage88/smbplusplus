@@ -1,4 +1,4 @@
 schemes:
 - https
-host: infra.trahan.dev
+host: smbplusquared.trahan.dev
 swagger: "2.0"
