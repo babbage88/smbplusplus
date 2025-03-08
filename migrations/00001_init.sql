@@ -64,8 +64,7 @@ CREATE TABLE IF NOT EXISTS public.users (
 	is_deleted bool DEFAULT false NOT NULL,
 	CONSTRAINT check_usesr_id_nonzero CHECK ((id > 0)),
 	CONSTRAINT unique_email UNIQUE (email),
-	CONSTRAINT unique_username UNIQUE (username),
-	CONSTRAINT users_pkey PRIMARY KEY (id)
+	CONSTRAINT unique_username UNIQUE (username)
 );
 CREATE INDEX users_idx_created ON public.users USING btree (created_at);
 CREATE INDEX users_idx_user_id ON public.users USING btree (id, username);
