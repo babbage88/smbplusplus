@@ -68,13 +68,6 @@ CREATE TABLE IF NOT EXISTS public.users (
 CREATE INDEX users_idx_created ON public.users USING btree (created_at);
 CREATE INDEX users_idx_user_id ON public.users USING btree (id, username);
 -- +goose StatementEnd
--- Table Triggers
--- +goose StatementBegin
-create trigger user_delete_trigger after
-delete
-    on
-    public.users for each row execute function log_user_deletion();
--- +goose StatementEnd
 
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS public.role_permission_mapping (
@@ -130,6 +123,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 -- +goose StatementEnd
+
+-- Table Triggers
 
 -- +goose StatementBegin
 CREATE TRIGGER user_delete_trigger
