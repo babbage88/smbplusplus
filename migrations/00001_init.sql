@@ -46,9 +46,6 @@ CREATE TABLE IF NOT EXISTS public.role_permission_mapping (
 	enabled bool DEFAULT true NOT NULL,
 	created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	last_modified timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  CONSTRAINT role_id_fk FOREIGN KEY (role_id) REFERENCES user_roles(id) 
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
 	CONSTRAINT unique_perm_role_id UNIQUE (permission_id, role_id)
 );
 
