@@ -26,12 +26,19 @@
 // swagger:meta
 package main
 
-import _ "embed"
+import (
+	_ "embed"
+	"log/slog"
+)
 
 //go:embed swagger.yaml
 var swaggerSpec []byte
 
 func main() {
-	server := NewSmbPlusServerFromConfig(".env")
+	server, err := NewSmbPlusServerFromConfig(".env")
+	if err != nil {
+		slog.Error("error creating new server instance", slog.String("error", err.Error()))
+
+	}
 	server.Start()
 }
