@@ -1,0 +1,8 @@
+{
+    "schemes": [
+      "http",
+      "https"
+    ],
+    "host": "localhost:4137",
+    "swagger": "2.0"
+}

@@ -1,14 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-	"os"
-	"strings"
 
-	"github.com/babbage88/smbplusplus/internal/pretty"
-	"github.com/joho/godotenv"
+	"github.com/babbage88/smbplusplus/internal/swaggerui"
 	"github.com/minio/minio-go/v7"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"gopkg.in/yaml.v3"
 )
 
 type SmbPlusSquaredServerOption func(p *SmbPlusSquaredServer)
@@ -38,14 +36,13 @@ func WithListenAddr(s string) SmbPlusSquaredServerOption {
 }
 
 type SquaredShare struct {
-	LocalPath string           `json:"localPath"`
-	S3Bucket  minio.BucketInfo `json:"s3Bucket"`
+	LocalPath string           `json:"localPath" yaml:"localPath"`
+	S3Bucket  minio.BucketInfo `json:"s3bucket" yaml:"s3Bucket"`
 }
 
 type SmbPlusSquaredServer struct {
-	SquaredShares []SquaredShare `json:"localShares"`
-	EnvFile       string         `json:"envFile"`
-	ListenAddr    string         `json:"listenAddr"`
+	SquaredShares []SquaredShare `json:"localShares" yaml:"localShares"`
+	ListenAddr    string         `json:"listenAddr" yaml:"listenAddress"`
 }
 
 func New(opts ...SmbPlusSquaredServerOption) *SmbPlusSquaredServer {
@@ -54,7 +51,6 @@ func New(opts ...SmbPlusSquaredServerOption) *SmbPlusSquaredServer {
 		listAddr = ":4200"
 	)
 	srv := &SmbPlusSquaredServer{
-		EnvFile:    envFile,
 		ListenAddr: listAddr,
 	}
 
@@ -65,40 +61,14 @@ func New(opts ...SmbPlusSquaredServerOption) *SmbPlusSquaredServer {
 	return srv
 }
 
-func NewFromEnv(e string) *SmbPlusSquaredServer {
-	g := &SmbPlusSquaredServer{
-		EnvFile: e,
-	}
-
-	err := godotenv.Load(e)
-	if err != nil {
-		msg := fmt.Sprint("Error loading .env file: ", err.Error())
-		pretty.PrintError(msg)
-	}
-	g.FilesDir = os.Getenv("FILES_DIR")
-	port := os.Getenv("LISTEN_PORT")
-	if strings.HasPrefix(port, ":") {
-		g.ListenAddr = port
-	} else {
-		g.ListenAddr = fmt.Sprint(":", os.Getenv("LISTEN_PORT"))
-	}
-
-	pretty.Print(g.FilesDir)
-	pretty.Print(g.ListenAddr)
-	return g
+func NewSmbPlusServerFromConfig(config string) *SmbPlusSquaredServer {
+	var server *SmbPlusSquaredServer
+	yaml.Marshal(server)
 }
 
 func (g *SmbPlusSquaredServer) Start() {
-	fs := http.FileServer(http.Dir(g.FilesDir))
-	// Serve static files
-	http.Handle("/files/", http.StripPrefix("/files/", fs))
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		g.ServeTemplatesAndScanFiles(w, r)
-	})
-
-	pretty.Print("Listening on " + g.ListenAddr + "...")
-	err := http.ListenAndServeTLS(g.ListenAddr, "cert.pem", "privkey.pem", nil)
-	if err != nil {
-		pretty.PrintError(err.Error())
-	}
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+	// Add Swagger UI handler
+	mux.Handle("/swaggerui/", http.StripPrefix("/swaggerui", swaggerui.ServeSwaggerUI(swaggerSpec)))
 }
