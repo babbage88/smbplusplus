@@ -7,7 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/babbage88/gofiles/internal/pretty"
+	"github.com/babbage88/smbplusplus/internal/pretty"
 )
 
 type FileInfo struct {
