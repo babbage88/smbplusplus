@@ -40,5 +40,6 @@ WHERE p.permission_name IN ('CreateUser', 'AlterUser', 'CreateShare');
 -- +goose StatementBegin
 DELETE FROM public.users WHERE "username" = 'devuser';
 DELETE FROM public.user_roles WHERE role_name = 'Admin';
---DELETE FROM public.app_permissions WHERE permission_name IN ('CreateUser', 'AlterUser', 'CreateShare');
+DELETE FROM public.app_permissions WHERE permission_name IN ('CreateUser', 'AlterUser', 'CreateShare');
 -- +goose StatementEnd
+
