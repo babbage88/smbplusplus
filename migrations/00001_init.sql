@@ -172,3 +172,4 @@ DROP TABLE public.user_roles;
 DROP TABLE public.app_permissions;
 DROP TABLE public.users;
 -- +goose StatementEnd
+
