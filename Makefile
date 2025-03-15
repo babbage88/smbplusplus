@@ -6,12 +6,19 @@ ENV_FILE:=.env
 MIG:=$(shell date '+%m%d%Y.%H%M%S')
 SHELL := /bin/bash
 export svc:=smbplus2
+export pgpw:=none
+export pguser:=jtrahan
+export dbname:=smbplusplus
+export schema_dump_file:=schema.sql
 
 check-swagger:
 	which swagger || (GO111MODULE=off go get -u github.com/go-swagger/go-swagger/cmd/swagger)
 
 swagger:
 	swagger generate spec -o ./swagger.yaml --scan-models && swagger generate spec -o swagger.json --scan-models
+
+dump-schema:
+	PGPASSWORD=$(pgpw) pg_dump -h localhost -p 5432 -s -U $(pguser) $(dbname) > $(schema_dump_file)
 
 dev-swagger: check-swagger
 	swagger generate spec -o ./dev-swagger.yaml --scan-models && swagger generate spec -o dev-swagger.json --scan-models

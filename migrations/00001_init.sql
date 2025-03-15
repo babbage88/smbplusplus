@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.s3_buckets (
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS public.squared_shares (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  s3_bucket_id uuid REFERENCES s3_buckets (id),
+  s3_bucket_id uuid REFERENCES public.s3_buckets (id),
   local_path TEXT NOT NULL,
   smb_path TEXT NULL,
   quota_size TEXT NULL

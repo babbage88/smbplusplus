@@ -2,9 +2,21 @@ version: "2"
 sql:
   - engine: "postgresql"
     queries: "query.sql"
-    schema: "migrations/"
+    schema: "schema.sql"
     gen:
       go:
         package: "smbplusplus_db"
         out: "database/smbplusplus_pg/"
         sql_package: "pgx/v5"
+        overrides:
+          - column: "users_with_roles.roles"
+            go_type:
+              type: "[]string"
+          - column: "users_with_roles.role_ids"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUIDs"
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"

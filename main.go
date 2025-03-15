@@ -1,4 +1,4 @@
-// Package main go-infra API.
+// Package main smbplusplus API.
 //
 // Terms Of Service:
 //
@@ -29,12 +29,21 @@ package main
 import (
 	_ "embed"
 	"log/slog"
+
+	"github.com/babbage88/smbplusplus/database/s2_pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 //go:embed swagger.yaml
 var swaggerSpec []byte
 
+func initPgConnPool() *pgxpool.Pool {
+	connPool := s2_pgxpool.PgPoolInit()
+	return connPool
+}
+
 func main() {
+	//dbConn := initPgConnPool()
 	server, err := NewSmbPlusServerFromConfig(".env")
 	if err != nil {
 		slog.Error("error creating new server instance", slog.String("error", err.Error()))

@@ -1,9 +1,27 @@
 package s2auth
 
-import "github.com/babbage88/smbplusplus/internal/pretty"
+import (
+	smbplusplus_db "github.com/babbage88/smbplusplus/database/smbplusplus_pg"
+	"github.com/babbage88/smbplusplus/internal/pretty"
+)
 
 func PlaceHolder() {
 	pretty.Print("Need to compile to create smbplusplus_pg")
+}
+
+type DbParser interface {
+	ParseUserFromDb(dbuser smbplusplus_db.User)
+}
+
+func (u *UserDao) ParseUserFromDb(dbuser smbplusplus_db.UsersWithRole) {
+	u.Id = dbuser.ID
+	u.UserName = dbuser.Username.String
+	u.Email = dbuser.Email.String
+	u.Enabled = dbuser.Enabled
+	u.IsDeleted = dbuser.IsDeleted
+	u.CreatedAt = dbuser.CreatedAt.Time
+	u.LastModified = dbuser.LastModified.Time
+	//u.RoleIds = dbuser.
 }
 
 /*

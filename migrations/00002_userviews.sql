@@ -51,22 +51,23 @@ AS SELECT user_roles.id AS "RoleId",
 -- +goose StatementBegin
 -- public.users_with_roles source
 
-CREATE OR REPLACE VIEW public.users_with_roles
-AS SELECT u.id,
-    u.username,
-    u.password,
-    u.email,
-    COALESCE(array_agg(ur.role_name) FILTER (WHERE ur.role_name IS NOT NULL), ARRAY['None'::text]::character varying[]) AS roles,
-    COALESCE(array_agg(urm.role_id) FILTER (WHERE urm.role_id IS NOT NULL), '{}'::uuid[]) AS role_ids,
-    u.created_at,
-    u.last_modified,
-    u.enabled,
-    u.is_deleted
-   FROM users u
-     LEFT JOIN user_role_mapping urm ON u.id = urm.user_id AND urm.enabled = true
-     LEFT JOIN user_roles ur ON urm.role_id = ur.id
-  WHERE u.is_deleted = false
-  GROUP BY u.id, u.username, u.password, u.email, u.created_at, u.last_modified, u.enabled, u.is_deleted;
+CREATE OR REPLACE VIEW public.users_with_roles AS
+SELECT u.id,
+       u.username,
+       u.password,
+       u.email,
+       COALESCE(array_agg(ur.role_name::text) FILTER (WHERE ur.role_name IS NOT NULL), ARRAY['None'::text]) AS roles,
+       COALESCE(array_agg(urm.role_id::uuid) FILTER (WHERE urm.role_id IS NOT NULL), '{}'::uuid[]) AS role_ids,
+       u.created_at,
+       u.last_modified,
+       u.enabled,
+       u.is_deleted
+FROM users u
+LEFT JOIN user_role_mapping urm ON u.id = urm.user_id AND urm.enabled = true
+LEFT JOIN user_roles ur ON urm.role_id = ur.id
+WHERE u.is_deleted = false
+GROUP BY u.id, u.username, u.password, u.email, u.created_at, u.last_modified, u.enabled, u.is_deleted;
+
 -- +goose StatementEnd
 
 -- +goose Down
