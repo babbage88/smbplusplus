@@ -36,10 +36,20 @@ import (
 	"github.com/babbage88/smbplusplus/database/s2_pgxpool"
 	"github.com/babbage88/smbplusplus/services/healthcheck"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 )
 
 //go:embed swagger.yaml
 var swaggerSpec []byte
+
+func loadEnvVars(path string) error {
+	err := godotenv.Load(path)
+	if err != nil {
+		slog.Error("Error loading .env file", slog.String("path", path), slog.String("error", err.Error()))
+	}
+	return err
+
+}
 
 func initPgConnPool(dbUrl string) *pgxpool.Pool {
 	connPool := s2_pgxpool.PgPoolInit(dbUrl)
