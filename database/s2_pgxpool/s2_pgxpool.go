@@ -32,12 +32,14 @@ func (db *DbInfo) ClientPortString() string {
 
 func getDbInfo(connection *pgxpool.Conn) (*DbInfo, error) {
 	dbInfo := &DbInfo{}
-	var getDbNameQuery = `SELECT current_database() as "DbName", session_user AS "DbUser", inet_server_addr() as "ServerAddress", 
+	var getDbNameQuery = `SELECT current_database() as "DbName", 
+	session_user AS "DbUser", 
+	inet_server_addr()::text as "ServerAddress", 
 	inet_server_port() as "ServerPort", 
-	inet_client_addr() "ClientAddress", 
+	inet_client_addr()::text "ClientAddress", 
 	inet_client_port() ClientPort;`
 	row := connection.QueryRow(context.Background(), getDbNameQuery)
-	err := row.Scan(&dbInfo)
+	err := row.Scan(&dbInfo.DbName, &dbInfo.DbUser, &dbInfo.ServerAddress, &dbInfo.ServerPort, &dbInfo.ClientAddress, &dbInfo.ClientPort)
 	if err != nil {
 		slog.Error("Error retrieving DbName and DbUser from database", slog.String("error", err.Error()))
 		return dbInfo, err
