@@ -112,7 +112,7 @@ func PgPoolInit(dbUrl string) *pgxpool.Pool {
 	os.Setenv("DB_ADDRESS", dbInfo.ServerAddress)
 	os.Setenv("DB_PORT", dbInfo.ServerPortString())
 
-	slog.Info("Connected to the database!", "Database", os.Getenv("DB_NAME"))
+	slog.Info("Connected to the database!", "Database", os.Getenv("DB_NAME"), "User", dbInfo.DbUser, "Address", dbInfo.ServerAddress, "Port", dbInfo.ServerPortString())
 
 	return connPool
 }
