@@ -1,5 +1,72 @@
+consumes:
+    - application/json
+produces:
+    - application/json
 schemes:
-- http
-- https
-host: localhost:4137
+    - http
+    - https
 swagger: "2.0"
+info:
+    contact:
+        email: test@trahan.dev
+        name: Justin Trahan
+    license:
+        name: N/A
+    termsOfService: there are no TOS at this moment, use at your own risk we take no responsibility
+    title: smbplusplus API.
+    version: v0.0.1
+host: localhost:4137
+paths:
+    /health/db/{TYPE}:
+        get:
+            description: |-
+                Performs database health check and returns a respoonse. Currently defaults to Read, but takes the type (eg: read, write, update, insert)
+                as a url path parameter
+            operationId: idOfdbHealthCheck
+            responses:
+                "200":
+                    $ref: '#/responses/GetUserByIdResponse'
+            security:
+                - bearer: []
+            tags:
+                - dbHealthCheck
+definitions:
+    UUIDs:
+        items:
+            format: uuid
+            type: string
+        title: UUIDs is a slice of UUID types.
+        type: array
+        x-go-package: github.com/google/uuid
+responses:
+    UserDao:
+        description: Respose will return login result and the user info.
+        headers:
+            createdAt:
+                format: date-time
+                type: string
+            email:
+                type: string
+            enabled:
+                type: boolean
+            isDeleted:
+                type: boolean
+            lastModified:
+                format: date-time
+                type: string
+            role_ids: {}
+            roles:
+                items:
+                    type: string
+                type: array
+            username:
+                type: string
+        schema:
+            $ref: '#/definitions/UUIDs'
+securityDefinitions:
+    bearer:
+        in: header
+        name: Authorization
+        type: apiKey
+security:
+    - bearer: []

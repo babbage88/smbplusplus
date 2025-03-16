@@ -1,0 +1,107 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "smbplusplus API.",
+    "termsOfService": "there are no TOS at this moment, use at your own risk we take no responsibility",
+    "contact": {
+      "name": "Justin Trahan",
+      "email": "test@trahan.dev"
+    },
+    "license": {
+      "name": "N/A"
+    },
+    "version": "v0.0.1"
+  },
+  "host": "localhost:4137",
+  "paths": {
+    "/health/db/{TYPE}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Performs database health check and returns a respoonse. Currently defaults to Read, but takes the type (eg: read, write, update, insert)\nas a url path parameter",
+        "tags": [
+          "dbHealthCheck"
+        ],
+        "operationId": "idOfdbHealthCheck",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetUserByIdResponse"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "UUIDs": {
+      "type": "array",
+      "title": "UUIDs is a slice of UUID types.",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "x-go-package": "github.com/google/uuid"
+    }
+  },
+  "responses": {
+    "UserDao": {
+      "description": "Respose will return login result and the user info.",
+      "schema": {
+        "$ref": "#/definitions/UUIDs"
+      },
+      "headers": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "email": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "isDeleted": {
+          "type": "boolean"
+        },
+        "lastModified": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "role_ids": {},
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ]
+}

@@ -48,7 +48,6 @@ func loadEnvVars(path string) error {
 		slog.Error("Error loading .env file", slog.String("path", path), slog.String("error", err.Error()))
 	}
 	return err
-
 }
 
 func initPgConnPool(dbUrl string) *pgxpool.Pool {
@@ -58,10 +57,16 @@ func initPgConnPool(dbUrl string) *pgxpool.Pool {
 
 func main() {
 	var dbUrl string
+	var envFile string = ".env"
 
 	srvport := flag.String("srvadr", ":8559", "Address and port that http server will listed on. :8559 is default")
-	flag.StringVar(&dbUrl, "db", os.Getenv("DATABASE_URL"), "Overide for the database connection url, otherwise DATABASE_URL env var will be used.")
+	flag.StringVar(&dbUrl, "db", "", "Overide for the database connection url, otherwise DATABASE_URL env var will be used.")
+	flag.StringVar(&envFile, "env-file", ".env", "Env file for loading environment variables.")
 	flag.Parse()
+	loadEnvVars(envFile)
+	if dbUrl == "" {
+		dbUrl = os.Getenv("DATABASE_URL")
+	}
 
 	dbConn := initPgConnPool(dbUrl)
 	api.SetSwaggerSpec(swaggerSpec)
@@ -69,6 +74,5 @@ func main() {
 	err := api.StartApiServer(srvport, &healthCheckService)
 	if err != nil {
 		slog.Error("error creating new server instance", slog.String("error", err.Error()))
-
 	}
 }
