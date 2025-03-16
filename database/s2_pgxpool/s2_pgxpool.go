@@ -2,6 +2,7 @@ package s2_pgxpool
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -9,6 +10,40 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type DbInfo struct {
+	DbName        string `json:"dbName" yaml:"db_name" db:"DbName"`
+	DbUser        string `json:"dbUser" yaml:"db_user" db:"DbUser"`
+	ServerAddress string `json:"serverAddress" yaml:"server_address" db:"ServerAddress"`
+	ServerPort    uint16 `json:"serverPort" yaml:"server_port" db:"ServerPort"`
+	ClientAddress string `json:"clientAddress" yaml:"client_address" db:"ClientAddress"`
+	ClientPort    uint16 `json:"clientPort" yaml:"client_port" db:"ClientPort"`
+}
+
+func (db *DbInfo) ServerPortString() string {
+	srvPort := fmt.Sprintf("%d", db.ServerPort)
+	return srvPort
+}
+
+func (db *DbInfo) ClientPortString() string {
+	clientPort := fmt.Sprintf("%d", db.ClientPort)
+	return clientPort
+}
+
+func getDbInfo(connection *pgxpool.Conn) (*DbInfo, error) {
+	dbInfo := &DbInfo{}
+	var getDbNameQuery = `SELECT current_database() as "DbName", session_user AS "DbUser", inet_server_addr() as "ServerAddress", 
+	inet_server_port() as "ServerPort", 
+	inet_client_addr() "ClientAddress", 
+	inet_client_port() ClientPort;`
+	row := connection.QueryRow(context.Background(), getDbNameQuery)
+	err := row.Scan(&dbInfo)
+	if err != nil {
+		slog.Error("Error retrieving DbName and DbUser from database", slog.String("error", err.Error()))
+		return dbInfo, err
+	}
+	return dbInfo, err
+}
 
 func pgxPoolConfig(dbUrl string) *pgxpool.Config {
 	const defaultMaxConns = int32(8)
@@ -64,6 +99,16 @@ func PgPoolInit(dbUrl string) *pgxpool.Pool {
 	if err != nil {
 		slog.Error("Could not ping database", slog.String("error", err.Error()))
 	}
+
+	dbInfo, infoErr := getDbInfo(connection)
+	if infoErr != nil {
+		slog.Error("error retrieving db info", slog.String("error", err.Error()))
+	}
+
+	os.Setenv("DB_NAME", dbInfo.DbName)
+	os.Setenv("DB_USER", dbInfo.DbUser)
+	os.Setenv("DB_ADDRESS", dbInfo.ServerAddress)
+	os.Setenv("DB_PORT", dbInfo.ServerPortString())
 
 	slog.Info("Connected to the database!", "Database", os.Getenv("DB_NAME"))
 
