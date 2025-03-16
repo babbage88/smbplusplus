@@ -28,26 +28,37 @@ package main
 
 import (
 	_ "embed"
+	"flag"
 	"log/slog"
+	"os"
 
+	"github.com/babbage88/smbplusplus/api"
 	"github.com/babbage88/smbplusplus/database/s2_pgxpool"
+	"github.com/babbage88/smbplusplus/services/healthcheck"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 //go:embed swagger.yaml
 var swaggerSpec []byte
 
-func initPgConnPool() *pgxpool.Pool {
-	connPool := s2_pgxpool.PgPoolInit()
+func initPgConnPool(dbUrl string) *pgxpool.Pool {
+	connPool := s2_pgxpool.PgPoolInit(dbUrl)
 	return connPool
 }
 
 func main() {
-	//dbConn := initPgConnPool()
-	server, err := NewSmbPlusServerFromConfig(".env")
+	var dbUrl string
+
+	srvport := flag.String("srvadr", ":8559", "Address and port that http server will listed on. :8559 is default")
+	flag.StringVar(&dbUrl, "db", os.Getenv("DATABASE_URL"), "Overide for the database connection url, otherwise DATABASE_URL env var will be used.")
+	flag.Parse()
+
+	dbConn := initPgConnPool(dbUrl)
+	api.SetSwaggerSpec(swaggerSpec)
+	healthCheckService := healthcheck.HealthCheckService{DbConn: dbConn}
+	err := api.StartApiServer(srvport, &healthCheckService)
 	if err != nil {
 		slog.Error("error creating new server instance", slog.String("error", err.Error()))
 
 	}
-	server.Start()
 }

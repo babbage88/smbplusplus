@@ -17,7 +17,7 @@ type AppPermission struct {
 
 type AuthToken struct {
 	ID           uuid.UUID
-	UserID       pgtype.UUID
+	UserID       uuid.UUID
 	Token        pgtype.Text
 	Expiration   pgtype.Timestamp
 	CreatedAt    pgtype.Timestamptz

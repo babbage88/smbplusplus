@@ -10,16 +10,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func pgxPoolConfig() *pgxpool.Config {
+func pgxPoolConfig(dbUrl string) *pgxpool.Config {
 	const defaultMaxConns = int32(8)
 	const defaultMinConns = int32(0)
 	const defaultMaxConnLifetime = time.Hour
 	const defaultMaxConnIdleTime = time.Minute * 30
 	const defaultHealthCheckPeriod = time.Minute
 	const defaultConnectTimeout = time.Second * 5
-	connString := os.Getenv("DATABASE_URL")
 
-	dbConfig, err := pgxpool.ParseConfig(connString)
+	dbConfig, err := pgxpool.ParseConfig(dbUrl)
 	if err != nil {
 		slog.Error("Failed to create a config, error: ", "Error", err)
 	}
@@ -48,9 +47,9 @@ func pgxPoolConfig() *pgxpool.Config {
 
 }
 
-func PgPoolInit() *pgxpool.Pool {
+func PgPoolInit(dbUrl string) *pgxpool.Pool {
 	// Create database connection
-	connPool, err := pgxpool.NewWithConfig(context.Background(), pgxPoolConfig())
+	connPool, err := pgxpool.NewWithConfig(context.Background(), pgxPoolConfig(dbUrl))
 	if err != nil {
 		slog.Error("Error while creating connection to the database!", slog.String("error", err.Error()))
 	}
