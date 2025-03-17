@@ -3,6 +3,6 @@
       "http",
       "https"
     ],
-    "host": "localhost:4137",
+    "host": "localhost:8559",
     "swagger": "2.0"
 }

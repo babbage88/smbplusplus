@@ -22,7 +22,7 @@
     },
     "version": "v0.0.1"
   },
-  "host": "localhost:4137",
+  "host": "localhost:8559",
   "paths": {
     "/health/db/{TYPE}": {
       "get": {
@@ -36,15 +36,51 @@
           "dbHealthCheck"
         ],
         "operationId": "idOfdbHealthCheck",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "TYPE",
+            "description": "Type of DB HealthCheck",
+            "name": "dhHealthCheckType",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "$ref": "#/responses/GetUserByIdResponse"
+            "description": "DbHeathCheckResponse",
+            "schema": {
+              "$ref": "#/definitions/DbHeathCheckResponse"
+            }
           }
         }
       }
     }
   },
   "definitions": {
+    "DbHeathCheckResponse": {
+      "type": "object",
+      "properties": {
+        "checkType": {
+          "type": "string",
+          "x-go-name": "CheckType"
+        },
+        "error": {
+          "type": "string",
+          "x-go-name": "Error"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "Id"
+        },
+        "status": {
+          "type": "string",
+          "x-go-name": "Status"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/healthcheck"
+    },
     "UUIDs": {
       "type": "array",
       "title": "UUIDs is a slice of UUID types.",

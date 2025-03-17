@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/babbage88/smbplusplus/internal/cors"
 	"github.com/babbage88/smbplusplus/internal/swaggerui"
 	"github.com/babbage88/smbplusplus/services/healthcheck"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -18,7 +19,7 @@ func SetSwaggerSpec(swaggerSpec []byte) {
 
 func StartApiServer(srvadr *string, hc *healthcheck.HealthCheckService) error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health/db/{TYPE}", hc.DbHealthCheckHandler())
+	mux.Handle("/health/db/{TYPE}", cors.CORSWithGET(hc.DbHealthCheckHandler()))
 
 	mux.Handle("/metrics", promhttp.Handler())
 	// Add Swagger UI handler

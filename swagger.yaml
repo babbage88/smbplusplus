@@ -15,7 +15,7 @@ info:
     termsOfService: there are no TOS at this moment, use at your own risk we take no responsibility
     title: smbplusplus API.
     version: v0.0.1
-host: localhost:4137
+host: localhost:8559
 paths:
     /health/db/{TYPE}:
         get:
@@ -23,14 +23,40 @@ paths:
                 Performs database health check and returns a respoonse. Currently defaults to Read, but takes the type (eg: read, write, update, insert)
                 as a url path parameter
             operationId: idOfdbHealthCheck
+            parameters:
+                - description: Type of DB HealthCheck
+                  in: path
+                  name: dhHealthCheckType
+                  required: true
+                  type: string
+                  x-go-name: TYPE
             responses:
                 "200":
-                    $ref: '#/responses/GetUserByIdResponse'
+                    description: DbHeathCheckResponse
+                    schema:
+                        $ref: '#/definitions/DbHeathCheckResponse'
             security:
                 - bearer: []
             tags:
                 - dbHealthCheck
 definitions:
+    DbHeathCheckResponse:
+        properties:
+            checkType:
+                type: string
+                x-go-name: CheckType
+            error:
+                type: string
+                x-go-name: Error
+            id:
+                format: uuid
+                type: string
+                x-go-name: Id
+            status:
+                type: string
+                x-go-name: Status
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/healthcheck
     UUIDs:
         items:
             format: uuid

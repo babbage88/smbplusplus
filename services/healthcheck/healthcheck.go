@@ -12,11 +12,20 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// swagger:model DbHeathCheckResponse
 type DbHeathCheckResponse struct {
 	Error     error     `json:"error"`
 	Status    string    `json:"status"`
 	CheckType string    `json:"checkType"`
 	Id        uuid.UUID `json:"id"`
+}
+
+// swagger:parameters idOfdbHealthCheck
+type DbHealthCheckRequest struct {
+	//Type of DB HealthCheck
+	//
+	// In: path
+	TYPE string `json:"dhHealthCheckType"`
 }
 
 type HealthCheckService struct {
@@ -34,7 +43,7 @@ func (dbhc *DbHeathCheckResponse) ParseDbReadHealthCheck(db smbplusplus_db.DbHea
 	dbhc.Id = db.ID
 	dbhc.Status = db.Status.String
 	if db.Status.String != "healthy" {
-		dbhc.Error = fmt.Errorf("database did not responde with healthy status.")
+		dbhc.Error = fmt.Errorf("database did not responde with healthy status")
 	} else {
 		dbhc.Error = nil
 	}
@@ -63,7 +72,7 @@ func (h *HealthCheckService) GetDbReadHealthCheck() DbHeathCheckResponse {
 // responses:
 //   200: GetUserByIdResponse
 
-func (h *HealthCheckService) DbHealthCheckHandler() func(http.ResponseWriter, *http.Request) {
+func (h *HealthCheckService) DbHealthCheckHandleFunc() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		checkType := r.PathValue("TYPE")
 		if checkType == "insert" || checkType == "write" {
