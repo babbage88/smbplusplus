@@ -245,3 +245,8 @@ INSERT INTO public.health_check (status, check_type)
 VALUES('Healthy', 'Create')
 RETURNING *;
 
+-- name: DbHealthCheckDelete :one
+DELETE FROM public.health_check 
+WHERE id = $1
+RETURNING *;
+

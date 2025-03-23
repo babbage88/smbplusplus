@@ -19,7 +19,7 @@ type DbHealthCheckHandler struct {
 // If the check type corresponds to an insert/write operation, it executes an insert health check.
 // Otherwise, it defaults to a read health check.
 //
-// Supported check types for insert operations: "insert", "write", "create", "new".
+// Supported check types for insert operations: "insert", "delete", "read".
 // All other types default to a read health check.
 //
 // security:
@@ -33,6 +33,7 @@ func (h *DbHealthCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	checkType := strings.ToLower(pathParamVal)
 	if checkType == "insert" || checkType == "write" || checkType == "create" || checkType == "new" {
 		insertCheck := h.service.DbInsertHealthCheck()
+		defer h.service.DbDeleteHealthCheck(insertCheck.Id)
 		insertResponse, err := json.Marshal(insertCheck)
 		if err != nil {
 			slog.Error("Error marshaling response", slog.String("error", err.Error()))
@@ -42,6 +43,22 @@ func (h *DbHealthCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(insertResponse)
+		slog.Info("Response sent successfully")
+		return
+
+	}
+
+	if checkType == "delete" || checkType == "drop" || checkType == "rm" || checkType == "remove" {
+		deleteDbHc := h.service.InsertAndDeleteHealthCheck()
+		delResponse, err := json.Marshal(deleteDbHc)
+		if err != nil {
+			slog.Error("Error marshaling response", slog.String("error", err.Error()))
+			http.Error(w, "error marshaling response: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(delResponse)
 		slog.Info("Response sent successfully")
 		return
 

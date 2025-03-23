@@ -111,3 +111,23 @@ func (h *HealthCheckServicePgxImpl) DbInsertHealthCheck() DbHeathCheckResponse {
 
 	return *dbHealth
 }
+
+func (h *HealthCheckServicePgxImpl) DbDeleteHealthCheck(id uuid.UUID) DbHeathCheckResponse {
+	dbHealth := &DbHeathCheckResponse{CheckType: "Delete"}
+	queries := smbplusplus_db.New(h.DbConn)
+	qry, err := queries.DbHealthCheckDelete(context.Background(), id)
+	if err != nil {
+		slog.Error("Error executing DbInsertHealthCheck query", slog.String("error", err.Error()))
+		dbHealth.Error = err
+		return *dbHealth
+	}
+	dbHealth.ParseDbHealthCheck(qry)
+
+	return *dbHealth
+}
+
+func (h *HealthCheckServicePgxImpl) InsertAndDeleteHealthCheck() DbHeathCheckResponse {
+	dbHealth := h.DbInsertHealthCheck()
+	delRecord := h.DbDeleteHealthCheck(dbHealth.Id)
+	return delRecord
+}

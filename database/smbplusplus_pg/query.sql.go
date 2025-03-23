@@ -45,6 +45,25 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const dbHealthCheckDelete = `-- name: DbHealthCheckDelete :one
+DELETE FROM public.health_check 
+WHERE id = $1
+RETURNING id, status, check_type, created_at, last_modified
+`
+
+func (q *Queries) DbHealthCheckDelete(ctx context.Context, id uuid.UUID) (HealthCheck, error) {
+	row := q.db.QueryRow(ctx, dbHealthCheckDelete, id)
+	var i HealthCheck
+	err := row.Scan(
+		&i.ID,
+		&i.Status,
+		&i.CheckType,
+		&i.CreatedAt,
+		&i.LastModified,
+	)
+	return i, err
+}
+
 const dbHealthCheckInsert = `-- name: DbHealthCheckInsert :one
 INSERT INTO public.health_check (status, check_type)
 VALUES('Healthy', 'Create')
