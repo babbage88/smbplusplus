@@ -31,10 +31,11 @@
             "bearer": []
           }
         ],
-        "description": "Performs database health check and returns a respoonse. Currently defaults to Read, but takes the type (eg: read, write, update, insert)\nas a url path parameter",
+        "description": "Supported check types for insert operations: \"insert\", \"write\", \"create\", \"new\".\nAll other types default to a read health check.",
         "tags": [
           "dbHealthCheck"
         ],
+        "summary": "Performs database health check and returns a respoonse.\nDetermines the type of health check to perform based on the URL path parameter \"type\".\nIf the check type corresponds to an insert/write operation, it executes an insert health check.\nOtherwise, it defaults to a read health check.",
         "operationId": "idOfdbHealthCheck",
         "parameters": [
           {
@@ -59,6 +60,7 @@
   "definitions": {
     "DbHeathCheckResponse": {
       "type": "object",
+      "title": "DbHeathCheckResponse represents the response structure for a database health check.",
       "properties": {
         "checkType": {
           "type": "string",

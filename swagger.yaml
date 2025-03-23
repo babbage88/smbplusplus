@@ -20,8 +20,8 @@ paths:
     /health/db/{TYPE}:
         get:
             description: |-
-                Performs database health check and returns a respoonse. Currently defaults to Read, but takes the type (eg: read, write, update, insert)
-                as a url path parameter
+                Supported check types for insert operations: "insert", "write", "create", "new".
+                All other types default to a read health check.
             operationId: idOfdbHealthCheck
             parameters:
                 - description: Type of DB HealthCheck
@@ -36,6 +36,11 @@ paths:
                         $ref: '#/definitions/DbHeathCheckResponse'
             security:
                 - bearer: []
+            summary: |-
+                Performs database health check and returns a respoonse.
+                Determines the type of health check to perform based on the URL path parameter "type".
+                If the check type corresponds to an insert/write operation, it executes an insert health check.
+                Otherwise, it defaults to a read health check.
             tags:
                 - dbHealthCheck
 definitions:
@@ -54,6 +59,7 @@ definitions:
             status:
                 type: string
                 x-go-name: Status
+        title: DbHeathCheckResponse represents the response structure for a database health check.
         type: object
         x-go-package: github.com/babbage88/smbplusplus/services/healthcheck
     UUIDs:

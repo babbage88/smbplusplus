@@ -70,7 +70,7 @@ func main() {
 
 	dbConn := initPgConnPool(dbUrl)
 	api.SetSwaggerSpec(swaggerSpec)
-	healthCheckService := healthcheck.HealthCheckService{DbConn: dbConn}
+	healthCheckService := healthcheck.HealthCheckServicePgxImpl{DbConn: dbConn}
 	err := api.StartApiServer(srvport, &healthCheckService)
 	if err != nil {
 		slog.Error("error creating new server instance", slog.String("error", err.Error()))

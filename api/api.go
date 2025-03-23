@@ -17,7 +17,7 @@ func SetSwaggerSpec(swaggerSpec []byte) {
 	SwaggerSpec = swaggerSpec
 }
 
-func StartApiServer(srvadr *string, hc *healthcheck.HealthCheckService) error {
+func StartApiServer(srvadr *string, hc healthcheck.HealthCheckService) error {
 	mux := http.NewServeMux()
 	mux.Handle("GET /health/db/{type}", cors.CORSWithGET(hc.DbHealthCheckHandler()))
 

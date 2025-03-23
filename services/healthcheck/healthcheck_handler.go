@@ -7,13 +7,20 @@ import (
 	"strings"
 )
 
+// DbHealthCheckHandler handles HTTP requests for database health checks.
 type DbHealthCheckHandler struct {
-	service *HealthCheckService
+	service *HealthCheckServicePgxImpl
 }
 
 // swagger:route GET /health/db/{TYPE} dbHealthCheck idOfdbHealthCheck
-// Performs database health check and returns a respoonse. Currently defaults to Read, but takes the type (eg: read, write, update, insert)
-// as a url path parameter
+//
+// Performs database health check and returns a respoonse.
+// Determines the type of health check to perform based on the URL path parameter "type".
+// If the check type corresponds to an insert/write operation, it executes an insert health check.
+// Otherwise, it defaults to a read health check.
+//
+// Supported check types for insert operations: "insert", "write", "create", "new".
+// All other types default to a read health check.
 //
 // security:
 // - bearer:
@@ -41,7 +48,7 @@ func (h *DbHealthCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	}
 
-	readCheck := h.service.GetDbReadHealthCheck()
+	readCheck := h.service.DbReadHealthCheck()
 	if readCheck.Error != nil {
 		slog.Error("Error running db read healthcheck", slog.String("error", readCheck.Error.Error()))
 		http.Error(w, "Failed to run database healthcheck query: "+readCheck.Error.Error(), http.StatusInternalServerError)
@@ -61,6 +68,9 @@ func (h *DbHealthCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	slog.Info("Response sent successfully")
 }
 
-func (h *HealthCheckService) DbHealthCheckHandler() http.Handler {
+// DbHealthCheckHandler wraps a HealthCheckServicePgxImpl to implement http.Handler interface
+//
+// This handler listens for Database Health checks and performs the corresponding test.
+func (h *HealthCheckServicePgxImpl) DbHealthCheckHandler() http.Handler {
 	return &DbHealthCheckHandler{service: h}
 }
