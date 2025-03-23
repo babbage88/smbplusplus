@@ -20,7 +20,7 @@ paths:
     /health/db/{TYPE}:
         get:
             description: |-
-                Supported check types for insert operations: "insert", "write", "create", "new".
+                Supported check types for insert operations: "insert", "delete", "read".
                 All other types default to a read health check.
             operationId: idOfdbHealthCheck
             parameters:

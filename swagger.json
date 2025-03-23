@@ -31,7 +31,7 @@
             "bearer": []
           }
         ],
-        "description": "Supported check types for insert operations: \"insert\", \"write\", \"create\", \"new\".\nAll other types default to a read health check.",
+        "description": "Supported check types for insert operations: \"insert\", \"delete\", \"read\".\nAll other types default to a read health check.",
         "tags": [
           "dbHealthCheck"
         ],

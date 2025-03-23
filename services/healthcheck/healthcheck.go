@@ -47,6 +47,8 @@ type HcDbParser interface {
 type HealthCheckService interface {
 	DbReadHealthCheck() DbHeathCheckResponse
 	DbInsertHealthCheck() DbHeathCheckResponse
+	DbDeleteHealthCheck(id uuid.UUID) DbHeathCheckResponse
+	InsertAndDeleteHealthCheck() DbHeathCheckResponse
 	DbHealthCheckHandler() http.Handler
 }
 
