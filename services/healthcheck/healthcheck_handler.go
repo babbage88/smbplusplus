@@ -31,7 +31,6 @@ func (h *DbHealthCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	pathParamVal := r.PathValue("type")
 	checkType := strings.ToLower(pathParamVal)
-	slog.Info("vals", slog.String("pathParamValue ", pathParamVal), slog.String("checkType", checkType))
 	if checkType == "insert" || checkType == "write" || checkType == "create" || checkType == "new" {
 		insertCheck := h.service.DbInsertHealthCheck()
 		insertResponse, err := json.Marshal(insertCheck)
