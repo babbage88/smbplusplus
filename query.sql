@@ -244,3 +244,4 @@ LIMIT 1;
 INSERT INTO public.health_check (status, check_type)
 VALUES('Healthy', 'Create')
 RETURNING *;
+
