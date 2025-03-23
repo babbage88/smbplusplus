@@ -26,10 +26,9 @@ paths:
             parameters:
                 - description: Type of DB HealthCheck
                   in: path
-                  name: dhHealthCheckType
+                  name: TYPE
                   required: true
                   type: string
-                  x-go-name: TYPE
             responses:
                 "200":
                     description: DbHeathCheckResponse

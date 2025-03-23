@@ -2,7 +2,6 @@ package healthcheck
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -23,9 +22,8 @@ type DbHeathCheckResponse struct {
 // swagger:parameters idOfdbHealthCheck
 type DbHealthCheckRequest struct {
 	//Type of DB HealthCheck
-	//
 	// In: path
-	TYPE string `json:"dhHealthCheckType"`
+	TYPE string
 }
 
 type HealthCheckService struct {
@@ -36,9 +34,21 @@ type IHealthCheckService interface {
 	GetDbReadHealthCheck() DbHeathCheckResponse
 	DbReadHealthCheckHandler() func(http.ResponseWriter, *http.Request)
 	ParseDbReadHealthCheck(db smbplusplus_db.DbHealthCheckReadRow)
+	ParseDbHealthCheck(db smbplusplus_db.HealthCheck)
 }
 
 func (dbhc *DbHeathCheckResponse) ParseDbReadHealthCheck(db smbplusplus_db.DbHealthCheckReadRow) {
+	dbhc.CheckType = db.CheckType.String
+	dbhc.Id = db.ID
+	dbhc.Status = db.Status.String
+	if db.Status.String != "healthy" {
+		dbhc.Error = fmt.Errorf("database did not responde with healthy status")
+	} else {
+		dbhc.Error = nil
+	}
+}
+
+func (dbhc *DbHeathCheckResponse) ParseDbHealthCheck(db smbplusplus_db.HealthCheck) {
 	dbhc.CheckType = db.CheckType.String
 	dbhc.Id = db.ID
 	dbhc.Status = db.Status.String
@@ -63,42 +73,16 @@ func (h *HealthCheckService) GetDbReadHealthCheck() DbHeathCheckResponse {
 	return *dbHealth
 }
 
-// swagger:route GET /health/db/{TYPE} dbHealthCheck idOfdbHealthCheck
-// Performs database health check and returns a respoonse. Currently defaults to Read, but takes the type (eg: read, write, update, insert)
-// as a url path parameter
-//
-// security:
-// - bearer:
-// responses:
-//   200: GetUserByIdResponse
-
-func (h *HealthCheckService) DbHealthCheckHandleFunc() func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		checkType := r.PathValue("TYPE")
-		if checkType == "insert" || checkType == "write" {
-			slog.Error("insert check not yet implemented")
-			http.Error(w, "write check not implemented", http.StatusNotFound)
-			return
-		} else {
-			readCheck := h.GetDbReadHealthCheck()
-
-			if readCheck.Error != nil {
-				slog.Error("Error running db read healthcheck", slog.String("error", readCheck.Error.Error()))
-				http.Error(w, "Failed to run database healthcheck query: "+readCheck.Error.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			hcResponse, err := json.Marshal(readCheck)
-			if err != nil {
-				slog.Error("Error marshing response", slog.String("error", err.Error()))
-				http.Error(w, "error marshaling response"+err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write(hcResponse)
-			slog.Info("Response sent successfully")
-		}
+func (h *HealthCheckService) DbInsertHealthCheck() DbHeathCheckResponse {
+	dbHealth := &DbHeathCheckResponse{CheckType: "Create"}
+	queries := smbplusplus_db.New(h.DbConn)
+	qry, err := queries.DbHealthCheckInsert(context.Background())
+	if err != nil {
+		slog.Error("Error executing DbReadHealthCheck query", slog.String("error", err.Error()))
+		dbHealth.Error = err
+		return *dbHealth
 	}
+	dbHealth.ParseDbHealthCheck(qry)
+
+	return *dbHealth
 }

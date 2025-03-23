@@ -19,7 +19,7 @@ func SetSwaggerSpec(swaggerSpec []byte) {
 
 func StartApiServer(srvadr *string, hc *healthcheck.HealthCheckService) error {
 	mux := http.NewServeMux()
-	mux.Handle("/health/db/{TYPE}", cors.CORSWithGET(hc.DbHealthCheckHandler()))
+	mux.Handle("GET /health/db/{type}", cors.CORSWithGET(hc.DbHealthCheckHandler()))
 
 	mux.Handle("/metrics", promhttp.Handler())
 	// Add Swagger UI handler

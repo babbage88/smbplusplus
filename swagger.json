@@ -39,9 +39,8 @@
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "TYPE",
             "description": "Type of DB HealthCheck",
-            "name": "dhHealthCheckType",
+            "name": "TYPE",
             "in": "path",
             "required": true
           }

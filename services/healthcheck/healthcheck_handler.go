@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"strings"
 )
 
 type DbHealthCheckHandler struct {
@@ -20,11 +21,24 @@ type DbHealthCheckHandler struct {
 //   200: DbHeathCheckResponse
 
 func (h *DbHealthCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	checkType := r.PathValue("TYPE")
-	if checkType == "insert" || checkType == "write" {
-		slog.Error("insert check not yet implemented")
-		http.Error(w, "write check not implemented", http.StatusNotFound)
+
+	pathParamVal := r.PathValue("type")
+	checkType := strings.ToLower(pathParamVal)
+	slog.Info("vals", slog.String("pathParamValue ", pathParamVal), slog.String("checkType", checkType))
+	if checkType == "insert" || checkType == "write" || checkType == "create" || checkType == "new" {
+		insertCheck := h.service.DbInsertHealthCheck()
+		insertResponse, err := json.Marshal(insertCheck)
+		if err != nil {
+			slog.Error("Error marshaling response", slog.String("error", err.Error()))
+			http.Error(w, "error marshaling response: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(insertResponse)
+		slog.Info("Response sent successfully")
 		return
+
 	}
 
 	readCheck := h.service.GetDbReadHealthCheck()
