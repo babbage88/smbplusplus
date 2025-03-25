@@ -5,6 +5,8 @@ BUILDER:=smbplusplus-builder
 ENV_FILE:=.env
 MIG:=$(shell date '+%m%d%Y.%H%M%S')
 SHELL := /bin/bash
+export goose_src:=internal/goose/goose.go
+export goose_out_bin:=goosey
 export svc:=smbplus2
 export pgpw:=none
 export pguser:=jtrahan
@@ -20,13 +22,19 @@ swagger:
 dump-schema:
 	PGPASSWORD=$(pgpw) pg_dump -h localhost -p 5432 -s -U $(pguser) $(dbname) > $(schema_dump_file)
 
+build-goose:
+	$(info ************  BUILD GOOSE MIGRATION BINARY src: $(goose_src) dest: $(goose_out_bin)  ************)
+	go build -v -o $(goose_out_bin) $(goose_src)
+
 dev-swagger: check-swagger
+	$(info ************ GENERATING SWAGGER SPEC: dev development ************)
 	swagger generate spec -o ./dev-swagger.yaml --scan-models && swagger generate spec -o dev-swagger.json --scan-models
 	swagger mixin spec/swagger.dev.json dev-swagger.json --output swagger.json --format=json
 	swagger mixin spec/swagger.dev.yaml dev-swagger.yaml --output swagger.yaml --format=yaml
 	rm dev-swagger.json && rm dev-swagger.yaml
 
 local-swagger: check-swagger
+	$(info ************ GENERATING SWAGGER SPEC: local development ************)
 	swagger generate spec -o ./local-swagger.yaml --scan-models && swagger generate spec --scan-models -o local-swagger.json --scan-models
 	swagger mixin spec/swagger.local.json local-swagger.json --output swagger.json --format=json
 	swagger mixin spec/swagger.local.yaml local-swagger.yaml --output swagger.yaml --format=yaml
@@ -39,6 +47,7 @@ k3local-swagger: check-swagger
 	rm k3local-swagger.json && rm k3local-swagger.yaml
 
 run-local: local-swagger
+	$(info ************ Starting application on localshost: go run . ************)
 	go run .
 
 embed-swagger:
@@ -48,6 +57,7 @@ serve-swagger: check-swagger
 	swagger serve -F=swagger swagger.yaml --no-open --port 4443
 
 buildandpushdev: dev-swagger
+	$(info ************ Performing docker buildx buildandpush Repository: $(GHCR_REPO)$(tag) ************)
 	docker buildx use $(BUILDER)
 	docker buildx build --platform linux/amd64,linux/arm64 -t $(GHCR_REPO)$(tag) . --push
 
@@ -56,10 +66,12 @@ buildandpushlocalk3: k3local-swagger
 	docker buildx build --platform linux/amd64,linux/arm64 -t $(GHCR_REPO_TEST)$(tag) . --push
 
 deploydev: buildandpushdev
+	$(info ************ Applying kubernetes manifest $(DEPLOYMENT) and restarting service: $(svc) ************)
 	kubectl apply -f $(DEPLOYMENT)
 	kubectl rollout restart deployment $(svc)
 
 deploylocalk3: buildandpushlocalk3
+	$(info ************ Applying kubernetes manifest $(LOCALK3DEPLOYMENT) and restarting service: $(svc) ************)
 	kubelocal apply -f $(LOCALK3DEPLOYMENT)
 	kubelocal rollout restart deployment $(svc)
 
