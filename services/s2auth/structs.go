@@ -55,3 +55,28 @@ type AuthTokenDao struct {
 	CreatedAt    time.Time `json:"created_at"`
 	LastModified time.Time `json:"last_modified"`
 }
+
+// Login Request takes  in Username and Password.
+// swagger:parameters idOfloginEndpoint
+type UserLoginReqWrapper struct {
+	// in:body
+	Body UserLoginRequest `json:"body"`
+}
+
+type UserLoginRequest struct {
+	UserName string `json:"username"`
+	Password string `json:"password"`
+}
+
+type UserLoginResponse struct {
+	Result   LoginResult `json:"result"`
+	UserInfo UserDao     `json:"UserDao"`
+}
+
+type LoginResult struct {
+	Success         bool  `json:"success"`
+	Error           error `json:"error"`
+	UserNameMatches bool  `json:"username_matches"`
+	PasswordValid   bool  `json:"password_valid"`
+	UserEnabled     bool  `json:"enabled"`
+}
