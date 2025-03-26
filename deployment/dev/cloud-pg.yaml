@@ -7,7 +7,7 @@ spec:
   instances: 3
   bootstrap:
     initdb:
-      database: s2user
+      database: smbplusplus
       owner: s2user
       secret:
         name: s2-cnpg-secret
