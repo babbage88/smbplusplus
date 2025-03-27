@@ -3,6 +3,8 @@ package s2auth
 import (
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
+
 	"github.com/google/uuid"
 )
 
@@ -47,6 +49,17 @@ type UserDao struct {
 	IsDeleted    bool       `json:"isDeleted"`
 }
 
+// Respose will return login result and the user info.
+// swagger:response AuthToken
+// This text will appear as description of your response body.
+type AuthToken struct {
+	// in:body
+	UserID       uuid.UUID `json:"user_id"`
+	Token        string    `json:"token"`
+	RefreshToken string    `json:"refreshToken"`
+	Expiration   time.Time `json:"expiration"`
+}
+
 type AuthTokenDao struct {
 	Id           uuid.UUID `json:"id"`
 	UserID       uuid.UUID `json:"user_id"`
@@ -79,4 +92,13 @@ type LoginResult struct {
 	UserNameMatches bool  `json:"username_matches"`
 	PasswordValid   bool  `json:"password_valid"`
 	UserEnabled     bool  `json:"enabled"`
+}
+
+type SmbPlusPlusClaim struct {
+	*jwt.RegisteredClaims
+	UserInfo interface{}
+}
+
+type TokenRefreshReq struct {
+	RefreshToken string `json:"refreshToken"`
 }
