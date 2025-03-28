@@ -25,6 +25,15 @@ func (u *UserDao) ParseUserFromDb(dbuser smbplusplus_db.UsersWithRole) {
 	u.Roles = dbuser.Roles
 }
 
+func (u *UserDao) ParseUserRowFromDb(dbuser smbplusplus_db.GetUserLoginRow) {
+	u.Id = dbuser.ID
+	u.UserName = dbuser.Username.String
+	u.Email = dbuser.Email.String
+	u.Enabled = dbuser.Enabled
+	u.RoleIds = dbuser.RoleIds
+	u.Roles = dbuser.Roles
+}
+
 type AuthDbParser interface {
 	ParseUserFromDb(dbuser smbplusplus_db.User)
 	ParseUserWithRoleFromDb(dbuser smbplusplus_db.UsersWithRole)

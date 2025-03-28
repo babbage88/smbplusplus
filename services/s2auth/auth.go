@@ -2,12 +2,14 @@ package s2auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"time"
 
 	smbplusplus_db "github.com/babbage88/smbplusplus/database/smbplusplus_pg"
+	"github.com/babbage88/smbplusplus/internal/type_helper"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -16,10 +18,11 @@ import (
 
 type AuthService interface {
 	VerifyUser(userid uuid.UUID) bool
+	Login(loginReq *UserLoginRequest) UserLoginResponse
 	RefreshAuthTokens() (AuthTokenDao, error)
 	VerifyUserPermission(executionUserId uuid.UUID, permissionsName string) (bool, error)
 	NewLoginRequest(username string, password string, isHashed bool) *UserLoginResponse
-	CreateAuthToken(userid uuid.UUID, role string, email string) (AuthTokenDao, error)
+	CreateAuthTokenOnLogin(userid uuid.UUID, roleIds uuid.UUIDs, email string) (AuthToken, error)
 	CreateSignedTokenString(sub string, userInfo interface{}) (string, time.Time, error)
 	VerifyToken(tokenString string) error
 	VerifyUserRolesForPermission(roleIds uuid.UUIDs, permissionName string) (bool, error)
@@ -103,4 +106,101 @@ func (t *AuthToken) RefreshAccessTokens(dbConn *pgxpool.Pool) error {
 	t.Token = newAccessToken
 
 	return nil
+}
+
+func (a *LocalAuthService) Login(loginReq *UserLoginRequest) UserLoginResponse {
+	var response UserLoginResponse
+	var result LoginResult
+	username := pgtype.Text{String: loginReq.UserName, Valid: true}
+
+	queries := smbplusplus_db.New(a.DbConn)
+	qry, err := queries.GetUserLogin(context.Background(), username)
+	result.PasswordValid = VerifyPassword(loginReq.Password, qry.Password.String)
+
+	if err != nil {
+		slog.Error("Error querying database for user", slog.String("UserName", loginReq.UserName))
+	}
+
+	if !result.PasswordValid {
+		slog.Error("Supplied password does not match the password stored in database", slog.String("User", loginReq.UserName))
+		result.Success = false
+		result.Error = errors.New("password does not match")
+		result.UserEnabled = qry.Enabled
+		response.Result = result
+		return response
+	}
+
+	if !qry.Enabled {
+		slog.Error("User is disabled", slog.String("User", loginReq.UserName))
+		result.Success = false
+		result.UserEnabled = qry.Enabled
+		result.Error = errors.New("user is diabled.")
+		response.Result = result
+		return response
+	}
+	slog.Info("Login was Successful")
+	result.Success = true
+	result.Error = nil
+	result.UserNameMatches = true
+
+	response.Result = result
+	response.UserInfo.ParseUserRowFromDb(qry)
+
+	return response
+}
+
+func (a LocalAuthService) CreateAuthTokenOnLogin(userid uuid.UUID, roleIds uuid.UUIDs, email string) (AuthToken, error) {
+	var retval AuthToken
+	userInfo := map[string]interface{}{
+		"email": email,
+	}
+
+	tokenString, expireTime, err := a.CreateSignedAuthTokenString(fmt.Sprint(userid), roleIds, userInfo)
+	if err != nil {
+		slog.Error("Error creating signed JWT token", slog.String("Error", err.Error()))
+		return retval, err
+	}
+
+	retval = AuthToken{
+		UserID:     userid,
+		Expiration: expireTime,
+		Token:      tokenString,
+	}
+
+	retval.CreateRefreshToken()
+
+	return retval, nil
+}
+
+func (ua *LocalAuthService) CreateSignedAuthTokenString(sub string, roleIds uuid.UUIDs, userInfo interface{}) (string, time.Time, error) {
+	expireMinutesEnv := os.Getenv("EXPIRATION_MINUTES")
+	expireMinutes, err := type_helper.ParseInt64(expireMinutesEnv)
+	if err != nil {
+		slog.Error("Error parsing EXPIRATION_MINUTES, defaulting to 60.", slog.String("Error", err.Error()))
+		expireMinutes = 60
+	}
+
+	jwtAlgo := os.Getenv("JWT_ALGORITHM")
+	if len(jwtAlgo) < 1 {
+		slog.Error("No JWT_ALGORIMTH Configered set, Setting to Default.", slog.String("Default", "HS256"))
+	}
+	jwtKey := []byte(os.Getenv("JWT_KEY"))
+
+	token := jwt.New(jwt.GetSigningMethod(jwtAlgo))
+	exp := time.Now().Add(time.Minute * time.Duration(expireMinutes))
+
+	token.Claims = jwt.MapClaims{
+		"sub":       sub,
+		"role_ids":  roleIds,
+		"user_info": userInfo,
+		"exp":       exp.Unix(),
+		"iss":       "smbplusplus",
+	}
+
+	signedToken, err := token.SignedString(jwtKey)
+	if err != nil {
+		return "", exp, err
+	}
+
+	return signedToken, exp, nil
 }

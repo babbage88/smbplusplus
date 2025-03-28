@@ -60,3 +60,21 @@ func ParseRefreshToken(refreshToken string) *jwt.RegisteredClaims {
 
 	return parsedRefreshToken.Claims.(*jwt.RegisteredClaims)
 }
+
+func (t *AuthToken) CreateRefreshToken() {
+	jwtKey := os.Getenv("JWT_KEY")
+	//refreshEnvValue, err := type_helper.ParseInt64(os.Getenv("REFRESH_EXPIRATION_HOURS"))
+	refreshExpiration := time.Now().Add(time.Hour * 48).Unix()
+	refreshToken := jwt.New(jwt.SigningMethodHS256)
+
+	rtClaims := refreshToken.Claims.(jwt.MapClaims)
+	rtClaims["sub"] = t.UserID
+	rtClaims["exp"] = refreshExpiration
+
+	rt, err := refreshToken.SignedString([]byte(jwtKey))
+	if err != nil {
+		slog.Error("Error signing refresh token", slog.String("Error", err.Error()))
+	}
+
+	t.RefreshToken = rt
+}
