@@ -134,7 +134,7 @@ func (a *LocalAuthService) Login(loginReq *UserLoginRequest) UserLoginResponse {
 		slog.Error("User is disabled", slog.String("User", loginReq.UserName))
 		result.Success = false
 		result.UserEnabled = qry.Enabled
-		result.Error = errors.New("user is diabled.")
+		result.Error = errors.New("user is diabled")
 		response.Result = result
 		return response
 	}
@@ -203,4 +203,30 @@ func (ua *LocalAuthService) CreateSignedAuthTokenString(sub string, roleIds uuid
 	}
 
 	return signedToken, exp, nil
+}
+
+func (a *LocalAuthService) VerifyToken(tokenString string) error {
+	jwtKey := []byte(os.Getenv("JWT_KEY"))
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if !token.Valid {
+		return fmt.Errorf("invalid token")
+	}
+
+	return nil
+}
+
+func (ua *LocalAuthService) ParseAccessToken(accessToken string) *SmbPlusPlusClaim {
+	jwtKey := os.Getenv("JWT_KEY")
+	parsedAccessToken, _ := jwt.ParseWithClaims(accessToken, &SmbPlusPlusClaim{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+
+	return parsedAccessToken.Claims.(*SmbPlusPlusClaim)
 }
