@@ -36,6 +36,7 @@ import (
 	"github.com/babbage88/smbplusplus/database/s2_pgxpool"
 	"github.com/babbage88/smbplusplus/services/healthcheck"
 	"github.com/babbage88/smbplusplus/services/s2auth"
+	"github.com/babbage88/smbplusplus/services/s2usercrud"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
@@ -73,7 +74,8 @@ func main() {
 	api.SetSwaggerSpec(swaggerSpec)
 	healthCheckService := healthcheck.HealthCheckServicePgxImpl{DbConn: dbConn}
 	auth_svc := s2auth.LocalAuthService{DbConn: dbConn}
-	err := api.StartApiServer(srvport, &healthCheckService, &auth_svc)
+	userCrud_svc := s2usercrud.UserCrudPgxImpl{DbConn: dbConn}
+	err := api.StartApiServer(srvport, &healthCheckService, &auth_svc, &userCrud_svc)
 	if err != nil {
 		slog.Error("error creating new server instance", slog.String("error", err.Error()))
 	}

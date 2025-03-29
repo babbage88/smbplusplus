@@ -10,12 +10,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type UserCruxPgxImpl struct {
+type UserCrudPgxImpl struct {
 	DbConn *pgxpool.Pool `json:"dbConn"`
 }
 
-type UserCRUD interface {
-	NewUser(username string, hashed_pw string, email string) (UserDao, error)
+type TemporaryHolder interface {
 	GetAllActiveUsersDao() ([]UserDao, error)
 	GetAllActiveRoles([]UserRoleDao, error)
 	GetAllAppPermissions([]AppPermissionDao, error)
@@ -39,7 +38,11 @@ type UserCRUD interface {
 	SoftDeleteRoleById(id uuid.UUID) error
 }
 
-func (us *UserCruxPgxImpl) NewUser(username string, password string, email string) (UserDao, error) {
+type UserCRUD interface {
+	NewUser(username string, hashed_pw string, email string) (UserDao, error)
+}
+
+func (us *UserCrudPgxImpl) NewUser(username string, password string, email string) (UserDao, error) {
 	hashed_pw, _ := hashing.HashPassword(password)
 	var newuser UserDao
 	// Set up parameters for the new user
