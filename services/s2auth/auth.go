@@ -19,13 +19,10 @@ import (
 type AuthService interface {
 	VerifyUser(userid uuid.UUID) bool
 	Login(loginReq *UserLoginRequest) UserLoginResponse
-	RefreshAuthTokens() (AuthTokenDao, error)
 	VerifyUserPermission(executionUserId uuid.UUID, permissionsName string) (bool, error)
-	NewLoginRequest(username string, password string, isHashed bool) *UserLoginResponse
 	CreateAuthTokenOnLogin(userid uuid.UUID, roleIds uuid.UUIDs, email string) (AuthToken, error)
-	CreateSignedTokenString(sub string, userInfo interface{}) (string, time.Time, error)
 	VerifyToken(tokenString string) error
-	VerifyUserRolesForPermission(roleIds uuid.UUIDs, permissionName string) (bool, error)
+	//VerifyUserRolesForPermission(roleIds uuid.UUIDs, permissionName string) (bool, error)
 	VerifyUserPermissionByRole(roleId uuid.UUID, permissionName string) (bool, error)
 }
 
@@ -46,9 +43,9 @@ func (ua *LocalAuthService) VerifyUser(userid uuid.UUID) bool {
 	return qry.Enabled
 }
 
-func (us *LocalAuthService) VerifyUserPermission(ueid pgtype.UUID, permissionName string) (bool, error) {
+func (us *LocalAuthService) VerifyUserPermission(ueid uuid.UUID, permissionName string) (bool, error) {
 	params := smbplusplus_db.VerifyUserPermissionByIdParams{
-		UserId:     ueid,
+		UserId:     pgtype.UUID{Bytes: ueid, Valid: true},
 		Permission: pgtype.Text{String: permissionName, Valid: true},
 	}
 	queries := smbplusplus_db.New(us.DbConn)

@@ -43,6 +43,21 @@ paths:
                 Otherwise, it defaults to a read health check.
             tags:
                 - dbHealthCheck
+    /login:
+        post:
+            operationId: idOfloginEndpoint
+            parameters:
+                - in: body
+                  name: body
+                  schema:
+                    $ref: '#/definitions/UserLoginRequest'
+                  x-go-name: Body
+            responses:
+                "200":
+                    $ref: '#/responses/AuthToken'
+            summary: Login a user and return token.
+            tags:
+                - login
 definitions:
     DbHeathCheckResponse:
         properties:
@@ -69,7 +84,27 @@ definitions:
         title: UUIDs is a slice of UUID types.
         type: array
         x-go-package: github.com/google/uuid
+    UserLoginRequest:
+        properties:
+            password:
+                type: string
+                x-go-name: Password
+            username:
+                type: string
+                x-go-name: UserName
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/s2auth
 responses:
+    AuthToken:
+        description: Respose will return login result and the user info.
+        headers:
+            expiration:
+                format: date-time
+                type: string
+            refreshToken:
+                type: string
+            token:
+                type: string
     UserDao:
         description: Respose will return login result and the user info.
         headers:

@@ -55,6 +55,30 @@
           }
         }
       }
+    },
+    "/login": {
+      "post": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Login a user and return token.",
+        "operationId": "idOfloginEndpoint",
+        "parameters": [
+          {
+            "x-go-name": "Body",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AuthToken"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -90,9 +114,38 @@
         "format": "uuid"
       },
       "x-go-package": "github.com/google/uuid"
+    },
+    "UserLoginRequest": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "UserName"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/s2auth"
     }
   },
   "responses": {
+    "AuthToken": {
+      "description": "Respose will return login result and the user info.",
+      "headers": {
+        "expiration": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "refreshToken": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
     "UserDao": {
       "description": "Respose will return login result and the user info.",
       "schema": {
