@@ -22,7 +22,7 @@ type AuthService interface {
 	VerifyUserPermission(executionUserId uuid.UUID, permissionsName string) (bool, error)
 	CreateAuthTokenOnLogin(userid uuid.UUID, roleIds uuid.UUIDs, email string) (AuthToken, error)
 	VerifyToken(tokenString string) error
-	//VerifyUserRolesForPermission(roleIds uuid.UUIDs, permissionName string) (bool, error)
+	VerifyUserRolesForPermission(roleIds uuid.UUIDs, permissionName string) (bool, error)
 	VerifyUserPermissionByRole(roleId uuid.UUID, permissionName string) (bool, error)
 }
 
@@ -226,4 +226,28 @@ func (ua *LocalAuthService) ParseAccessToken(accessToken string) *SmbPlusPlusCla
 	})
 
 	return parsedAccessToken.Claims.(*SmbPlusPlusClaim)
+}
+
+func (ua *LocalAuthService) VerifyUserRolesForPermission(roleIds uuid.UUIDs, permissionName string) (bool, error) {
+	var lastError error // Store any encountered errors for logging or debugging
+
+	for _, roleId := range roleIds {
+		hasPermission, err := ua.VerifyUserPermissionByRole(roleId, permissionName)
+		if err != nil {
+			// Save the error but continue checking other roles
+			slog.Error("Error encountered while verifying permissions", slog.String("roleId", roleId.String()), slog.String("error", err.Error()))
+			lastError = err
+			continue
+		}
+		if hasPermission {
+			return true, err
+		}
+	}
+
+	if lastError != nil {
+		// Log the error for debugging purposes
+		slog.Error("Error occurred while verifying permissions for roles", slog.String("Error", lastError.Error()))
+	}
+	// Return false if no roles grant the permission
+	return false, lastError
 }
