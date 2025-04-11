@@ -15,8 +15,25 @@ info:
     termsOfService: there are no TOS at this moment, use at your own risk we take no responsibility
     title: smbplusplus API.
     version: v0.0.1
-host: localhost:8559
+host: localhost:8995
 paths:
+    /create/user:
+        post:
+            operationId: idOfcreateUserEndpoint
+            parameters:
+                - in: body
+                  name: body
+                  schema:
+                    $ref: '#/definitions/CreateNewUserRequest'
+                  x-go-name: Body
+            responses:
+                "200":
+                    $ref: '#/responses/UserDao'
+            security:
+                - bearer: []
+            summary: Create a new user.
+            tags:
+                - createuser
     /health/db/{TYPE}:
         get:
             description: |-
@@ -59,6 +76,51 @@ paths:
             tags:
                 - login
 definitions:
+    CreateAppPermissionRequest:
+        properties:
+            descripiton:
+                type: string
+                x-go-name: PermissionDescription
+            name:
+                type: string
+                x-go-name: PermissionName
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/s2usercrud
+    CreateNewUserRequest:
+        properties:
+            newEmail:
+                type: string
+                x-go-name: NewUserEmail
+            newPassword:
+                type: string
+                x-go-name: NewUserPassword
+            newUsername:
+                type: string
+                x-go-name: NewUsername
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/s2usercrud
+    CreateRolePermissionMappingRequest:
+        properties:
+            permId:
+                format: uuid
+                type: string
+                x-go-name: PermissionId
+            roleId:
+                format: uuid
+                type: string
+                x-go-name: RoleId
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/s2usercrud
+    CreateUserRoleRequest:
+        properties:
+            roleDesc:
+                type: string
+                x-go-name: RoleDescription
+            roleName:
+                type: string
+                x-go-name: RoleName
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/s2usercrud
     DbHeathCheckResponse:
         properties:
             checkType:
@@ -77,6 +139,30 @@ definitions:
         title: DbHeathCheckResponse represents the response structure for a database health check.
         type: object
         x-go-package: github.com/babbage88/smbplusplus/services/healthcheck
+    DisableUserRequest:
+        properties:
+            targetUserId:
+                format: uuid
+                type: string
+                x-go-name: TargetUserId
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/s2usercrud
+    EnableUserRequest:
+        properties:
+            targetUserId:
+                format: uuid
+                type: string
+                x-go-name: TargetUserId
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/s2usercrud
+    SoftDeleteUserByIdRequest:
+        properties:
+            targetUserId:
+                format: uuid
+                type: string
+                x-go-name: TargetUserId
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/s2usercrud
     UUIDs:
         items:
             format: uuid
@@ -84,6 +170,29 @@ definitions:
         title: UUIDs is a slice of UUID types.
         type: array
         x-go-package: github.com/google/uuid
+    UpdateUserPasswordRequest:
+        properties:
+            newPassword:
+                type: string
+                x-go-name: NewPassword
+            targetUserId:
+                format: uuid
+                type: string
+                x-go-name: TargetUserId
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/s2usercrud
+    UpdateUserRoleMappingRequest:
+        properties:
+            roleId:
+                format: uuid
+                type: string
+                x-go-name: RoleId
+            targetUserId:
+                format: uuid
+                type: string
+                x-go-name: TargetUserId
+        type: object
+        x-go-package: github.com/babbage88/smbplusplus/services/s2usercrud
     UserLoginRequest:
         properties:
             password:

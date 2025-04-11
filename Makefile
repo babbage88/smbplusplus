@@ -1,7 +1,7 @@
-GHCR_REPO:=ghcr.io/babbage88/smbp2:
+GHCR_REPO:=ghcr.io/babbage88/smbplusplus:
 GHCR_REPO_TEST:=jtrahan88/smbp2-test:
 DEPLOYMENT:=deployment/k8s/smbplus2.yaml
-BUILDER:=smbplusplus-builder
+export BUILDER:=smbplusplus-builder
 ENV_FILE:=.env
 MIG:=$(shell date '+%m%d%Y.%H%M%S')
 SHELL := /bin/bash
@@ -12,6 +12,14 @@ export pgpw:=none
 export pguser:=jtrahan
 export dbname:=smbplusplus
 export schema_dump_file:=schema.sql
+
+check-builder:
+	@if ! docker buildx inspect $(BUILDER) > /dev/null 2>&1; then \
+		echo "Builder $(BUILDER) does not exist. Creating..."; \
+    	docker buildx create --name $(BUILDER) --bootstrap; \
+	fi
+
+create-builder: check-builder
 
 check-swagger:
 	which swagger || (GO111MODULE=off go get -u github.com/go-swagger/go-swagger/cmd/swagger)
@@ -48,7 +56,7 @@ k3local-swagger: check-swagger
 
 run-local: local-swagger
 	$(info ************ Starting application on localshost: go run . ************)
-	go run .
+	go run . --development
 
 embed-swagger:
 	swagger generate spec -o ./embed/swagger.yaml --scan-models && swagger generate spec > ./embed/swagger.json

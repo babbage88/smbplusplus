@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smbplusplus
+  namespace: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: smbplusplus
+  template:
+    metadata:
+      labels:
+        app: smbplusplus
+    spec:
+      containers:
+        - name: smbplusplus
+          image: ghcr.io/babbage88/smbplusplus:v0.0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8995
+          command: ["/app/server"]
+          env:
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+            - name: GOMAXPROCS
+              valueFrom:
+                configMapKeyRef:
+                  name: goapp-configmap
+                  key: GOMAXPROCS
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: smbplusplus-app-secrets
+                  key: JWT_KEY
+            - name: EXPIRATION_MINUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: goapp-configmap
+                  key: EXPIRATION_MINUTES
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: smbplusplus-app-secrets
+                  key: DATABASE_URL
+            - name: JWT_ALGORITHM
+              valueFrom:
+                configMapKeyRef:
+                  name: goapp-configmap
+                  key: JWT_ALGORITHM
+            - name: DEV_APP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: smbplusplus-app-secrets
+                  key: DEV_APP_PASS
+            - name: S3_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: goapp-configmap
+                  key: S3_ENDPOINT
+            - name: S3_KEYID
+              valueFrom:
+                configMapKeyRef:
+                  name: goapp-configmap
+                  key: S3_KEYID
+            - name: S3_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: smbplusplus-app-secrets
+                  key: S3_SECRET
+            - name: S3_DEFAULT_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: goapp-configmap
+                  key: S3_DEFAULT_BUCKET
+            - name: S3_USESSL
+              valueFrom:
+                configMapKeyRef:
+                  name: goapp-configmap
+                  key: S3_USESSL
+            - name: CLOUDFLARE_DNS_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: smbplusplus-app-secrets
+                  key: CLOUDFLARE_DNS_API_TOKEN
+          resources:
+            limits:
+              memory: "2Gi"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+      imagePullSecrets:
+        - name: ghcr

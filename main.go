@@ -29,6 +29,7 @@ package main
 import (
 	_ "embed"
 	"flag"
+	"log"
 	"log/slog"
 	"os"
 
@@ -37,6 +38,7 @@ import (
 	"github.com/babbage88/smbplusplus/services/healthcheck"
 	"github.com/babbage88/smbplusplus/services/s2auth"
 	"github.com/babbage88/smbplusplus/services/s2usercrud"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
@@ -60,12 +62,30 @@ func initPgConnPool(dbUrl string) *pgxpool.Pool {
 func main() {
 	var dbUrl string
 	var envFile string = ".env"
+	var isDevelopment bool
+	var resetDevUSer bool
+	var debugProfile bool
 
-	srvport := flag.String("srvadr", ":8559", "Address and port that http server will listed on. :8559 is default")
+	srvport := flag.String("srvadr", ":8995", "Address and port that http server will listed on. :8559 is default")
 	flag.StringVar(&dbUrl, "db", "", "Overide for the database connection url, otherwise DATABASE_URL env var will be used.")
 	flag.StringVar(&envFile, "env-file", ".env", "Env file for loading environment variables.")
+	flag.BoolVar(&isDevelopment, "development", false, "Flag to start application in Development mode, env vars loaded from env-file")
+	flag.BoolVar(&debugProfile, "debug", false, "Flag to enable go Debug/Profiling.")
+
+	flag.BoolVar(&resetDevUSer, "reset-devuser", false, "Flag when set to true, the builtin Admin user (devuser) will have it's password set from the ENV variable DEV_APP_PASS")
 	flag.Parse()
-	loadEnvVars(envFile)
+	if isDevelopment {
+		slog.Info("Starting in Local Development mode.")
+		loadEnvVars(envFile)
+	}
+
+	if debugProfile {
+		slog.Info("Starting application in debug mode,")
+		EnableProfiling()
+		setLoggingLevel(slog.LevelDebug)
+		slog.Debug("Logging level set to Debug")
+	}
+
 	if dbUrl == "" {
 		dbUrl = os.Getenv("DATABASE_URL")
 	}
@@ -75,6 +95,15 @@ func main() {
 	healthCheckService := healthcheck.HealthCheckServicePgxImpl{DbConn: dbConn}
 	auth_svc := s2auth.LocalAuthService{DbConn: dbConn}
 	userCrud_svc := s2usercrud.UserCrudPgxImpl{DbConn: dbConn}
+	if resetDevUSer {
+		uid, err := uuid.Parse("b0fed113-30c4-42aa-bcdb-d0ecf2ac7f14")
+		if err != nil {
+			log.Fatalf("Error Parsing UUID for admin user %s\n", err.Error())
+		}
+		slog.Info("Reseting devuser Admin accoutn devuser pw")
+		userCrud_svc.UpdateUserPasswordById(uid, os.Getenv("DEV_APP_PASS"))
+
+	}
 	err := api.StartApiServer(srvport, &healthCheckService, &auth_svc, &userCrud_svc)
 	if err != nil {
 		slog.Error("error creating new server instance", slog.String("error", err.Error()))

@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: smbplusplus-ingress
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - smbplusplus.trahan.dev
+      secretName: trahan-dev-cert
+  rules:
+    - host: "smbplusplus.trahan.dev"
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: smbplusplus-svc
+                port:
+                  number: 80

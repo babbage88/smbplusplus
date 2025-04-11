@@ -2,6 +2,8 @@ package s2usercrud
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 
 	smbplusplus_db "github.com/babbage88/smbplusplus/database/smbplusplus_pg"
 	"github.com/babbage88/smbplusplus/internal/hashing"
@@ -20,8 +22,6 @@ type TemporaryHolder interface {
 	GetAllAppPermissions([]AppPermissionDao, error)
 	GetUserByName(username string) (UserDao, error)
 	GetUserById(id uuid.UUID) (UserDao, error)
-	updateUserPasswordById(id uuid.UUID, password string) error
-	UpdateUserPasswordById(targetUserId uuid.UUID, newPassword string) error
 	UpdateUserEmailById(id uuid.UUID, email string)
 	VerifyAlterUser(executionUserId uuid.UUID) (bool, error)
 	UpdateUserPasswordWithAuth(execUserId uuid.UUID, targetUserId uuid.UUID, newPassword string) error
@@ -40,6 +40,19 @@ type TemporaryHolder interface {
 
 type UserCRUD interface {
 	NewUser(username string, hashed_pw string, email string) (UserDao, error)
+	UpdateUserPasswordById(id uuid.UUID, password string) error
+}
+
+func (us *UserCrudPgxImpl) UpdateUserPasswordById(id uuid.UUID, password string) error {
+	hashed_pw, _ := hashing.HashPassword(password)
+
+	params := &smbplusplus_db.UpdateUserPasswordByIdParams{ID: id, Password: pgtype.Text{String: hashed_pw, Valid: true}}
+	queries := smbplusplus_db.New(us.DbConn)
+	err := queries.UpdateUserPasswordById(context.Background(), *params)
+	if err != nil {
+		slog.Error("Error updating user password in database", slog.String("ID", fmt.Sprint(id)), slog.String("Error", err.Error()))
+	}
+	return err
 }
 
 func (us *UserCrudPgxImpl) NewUser(username string, password string, email string) (UserDao, error) {

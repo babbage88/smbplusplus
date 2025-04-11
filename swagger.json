@@ -22,8 +22,37 @@
     },
     "version": "v0.0.1"
   },
-  "host": "localhost:8559",
+  "host": "localhost:8995",
   "paths": {
+    "/create/user": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "createuser"
+        ],
+        "summary": "Create a new user.",
+        "operationId": "idOfcreateUserEndpoint",
+        "parameters": [
+          {
+            "x-go-name": "Body",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateNewUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UserDao"
+          }
+        }
+      }
+    },
     "/health/db/{TYPE}": {
       "get": {
         "security": [
@@ -82,6 +111,68 @@
     }
   },
   "definitions": {
+    "CreateAppPermissionRequest": {
+      "type": "object",
+      "properties": {
+        "descripiton": {
+          "type": "string",
+          "x-go-name": "PermissionDescription"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "PermissionName"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/s2usercrud"
+    },
+    "CreateNewUserRequest": {
+      "type": "object",
+      "properties": {
+        "newEmail": {
+          "type": "string",
+          "x-go-name": "NewUserEmail"
+        },
+        "newPassword": {
+          "type": "string",
+          "x-go-name": "NewUserPassword"
+        },
+        "newUsername": {
+          "type": "string",
+          "x-go-name": "NewUsername"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/s2usercrud"
+    },
+    "CreateRolePermissionMappingRequest": {
+      "type": "object",
+      "properties": {
+        "permId": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "PermissionId"
+        },
+        "roleId": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "RoleId"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/s2usercrud"
+    },
+    "CreateUserRoleRequest": {
+      "type": "object",
+      "properties": {
+        "roleDesc": {
+          "type": "string",
+          "x-go-name": "RoleDescription"
+        },
+        "roleName": {
+          "type": "string",
+          "x-go-name": "RoleName"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/s2usercrud"
+    },
     "DbHeathCheckResponse": {
       "type": "object",
       "title": "DbHeathCheckResponse represents the response structure for a database health check.",
@@ -106,6 +197,39 @@
       },
       "x-go-package": "github.com/babbage88/smbplusplus/services/healthcheck"
     },
+    "DisableUserRequest": {
+      "type": "object",
+      "properties": {
+        "targetUserId": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "TargetUserId"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/s2usercrud"
+    },
+    "EnableUserRequest": {
+      "type": "object",
+      "properties": {
+        "targetUserId": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "TargetUserId"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/s2usercrud"
+    },
+    "SoftDeleteUserByIdRequest": {
+      "type": "object",
+      "properties": {
+        "targetUserId": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "TargetUserId"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/s2usercrud"
+    },
     "UUIDs": {
       "type": "array",
       "title": "UUIDs is a slice of UUID types.",
@@ -114,6 +238,37 @@
         "format": "uuid"
       },
       "x-go-package": "github.com/google/uuid"
+    },
+    "UpdateUserPasswordRequest": {
+      "type": "object",
+      "properties": {
+        "newPassword": {
+          "type": "string",
+          "x-go-name": "NewPassword"
+        },
+        "targetUserId": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "TargetUserId"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/s2usercrud"
+    },
+    "UpdateUserRoleMappingRequest": {
+      "type": "object",
+      "properties": {
+        "roleId": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "RoleId"
+        },
+        "targetUserId": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "TargetUserId"
+        }
+      },
+      "x-go-package": "github.com/babbage88/smbplusplus/services/s2usercrud"
     },
     "UserLoginRequest": {
       "type": "object",

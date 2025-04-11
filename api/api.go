@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"net/http/pprof"
+
 	"github.com/babbage88/smbplusplus/internal/cors"
 	"github.com/babbage88/smbplusplus/internal/swaggerui"
 	"github.com/babbage88/smbplusplus/services/healthcheck"
@@ -28,6 +30,12 @@ func StartApiServer(srvadr *string, hc healthcheck.HealthCheckService, auth_svc 
 	mux.Handle("/metrics", promhttp.Handler())
 	// Add Swagger UI handler
 	mux.Handle("/swaggerui/", http.StripPrefix("/swaggerui", swaggerui.ServeSwaggerUI(SwaggerSpec)))
+	// pprof handlers
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	err := http.ListenAndServe(*srvadr, mux)
 	if err != nil {
 		slog.Error("Failed to start server", slog.String("Error", err.Error()))

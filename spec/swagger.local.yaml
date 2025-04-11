@@ -1,5 +1,5 @@
 schemes:
 - http
 - https
-host: localhost:8559
+host: localhost:8995
 swagger: "2.0"

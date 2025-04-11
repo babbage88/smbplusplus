@@ -1,4 +1,8 @@
 goosey
+heap*.prof
+start_memory_profile.sh
+cpu.prof
+k8s-secrets.yaml
 certs.zip**
 **.db
 **res.json
